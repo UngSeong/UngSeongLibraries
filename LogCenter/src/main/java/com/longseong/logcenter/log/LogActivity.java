@@ -1,5 +1,6 @@
 package com.longseong.logcenter.log;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,6 +29,7 @@ public class LogActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        setTheme(R.style.Theme_LogActivity);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_log);
 

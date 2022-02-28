@@ -3,6 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/KSU/AndroidStudio/LongSeongLibraries/LogCenter/src/main/res/drawable/ic_clear_log.xml" value="0.176" />
+        <entry key="..\:/KSU/AndroidStudio/LongSeongLibraries/LogCenter/src/main/res/drawable/ic_launcher_background.xml" value="0.176" />
+        <entry key="..\:/KSU/AndroidStudio/LongSeongLibraries/LogCenter/src/main/res/drawable/ic_logcat.xml" value="0.176" />
+        <entry key="..\:/KSU/AndroidStudio/LongSeongLibraries/LogCenter/src/main/res/layout/activity_log.xml" value="0.21197916666666666" />
         <entry key="..\:/KSU/AndroidStudio/LongSeongLibraries/LogCenter/src/main/res/menu/menu_log.xml" value="0.1" />
       </map>
     </option>
