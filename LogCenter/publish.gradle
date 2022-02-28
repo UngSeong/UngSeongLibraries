@@ -3,12 +3,9 @@ apply plugin: 'maven-publish'
 def githubProperties = new Properties()
 githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
 
-def versionProperties = new Properties()
-githubProperties.load(new FileInputStream(rootProject.file("version.properties")))
-
 def LIB_GROUP_ID = 'com.longseong.logcenter'
 def LIB_ARTIFACT_ID = 'logcenter'
-def LIB_VERSION = versionProperties['version_1.0.1']
+def LIB_VERSION = '1.0.1'
 
 task sourceJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
