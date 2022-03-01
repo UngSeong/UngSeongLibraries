@@ -10,7 +10,7 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
-        android:background="@color/logcenter_white"
+        android:background="@color/white"
         android:backgroundTint="?colorPrimary"
         app:layout_constraintBottom_toTopOf="@+id/ll_log_list_layout"
         app:layout_constraintEnd_toEndOf="parent"
