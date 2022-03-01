@@ -4,12 +4,12 @@
 
     <item
         android:id="@+id/menu_scroll_to_end"
-        android:icon="@drawable/ic_scroll_to_end"
+        android:icon="@drawable/logcenter_ic_scroll_to_end"
         android:title="끝까지 내리기"
         app:showAsAction="ifRoom" />
     <item
         android:id="@+id/menu_clear_logcat"
-        android:icon="@drawable/ic_clear_log"
+        android:icon="@drawable/logcenter_ic_clear_log"
         android:title="로그창 비우기"
         app:showAsAction="ifRoom" />
 

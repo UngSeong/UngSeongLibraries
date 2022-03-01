@@ -1,6 +1,5 @@
 package com.longseong.logcenter.log;
 
-import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,9 +28,9 @@ public class LogActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        setTheme(R.style.Theme_LogActivity);
+        setTheme(R.style.LogCenterActivity);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_log);
+        setContentView(R.layout.logcenter_activity_log);
 
         initView();
     }
@@ -39,7 +38,7 @@ public class LogActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
 
-        getMenuInflater().inflate(R.menu.menu_log, menu);
+        getMenuInflater().inflate(R.menu.logcenter_menu_log, menu);
 
         return super.onCreateOptionsMenu(menu);
     }

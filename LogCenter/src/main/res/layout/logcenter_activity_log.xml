@@ -4,13 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:theme="@style/Theme.LogActivity">
+    android:theme="@style/LogCenterActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
-        android:background="@color/white"
+        android:background="@color/logcenter_white"
         android:backgroundTint="?colorPrimary"
         app:layout_constraintBottom_toTopOf="@+id/ll_log_list_layout"
         app:layout_constraintEnd_toEndOf="parent"
