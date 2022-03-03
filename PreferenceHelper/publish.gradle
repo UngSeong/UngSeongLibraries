@@ -1,0 +1,46 @@
+apply plugin: 'maven-publish'
+
+def githubProperties = new Properties()
+githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
+
+def LIB_GROUP_ID = 'com.longseong.preferencehelper'
+def LIB_ARTIFACT_ID = 'preferencehelper'
+def LIB_VERSION = '1.0.0'
+
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "sources"
+}
+publishing {
+    repositories {
+        maven {
+            name = 'PreferenceHelper'
+            url "https://maven.pkg.github.com/LongSeong/LongSeongLibraries"
+            credentials {
+                username = githubProperties['github_username'] ?: System.getenv("github_username")
+                password = githubProperties['github_access_token'] ?: System.getenv("github_access_token")
+            }
+        }
+    }
+    publications {
+        deploy(MavenPublication) {
+            groupId LIB_GROUP_ID
+            artifactId LIB_ARTIFACT_ID
+            version LIB_VERSION
+            artifact("$buildDir/outputs/aar/PreferenceHelper-release.aar")
+            artifact(sourceJar)
+
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+
+                //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
+                configurations.api.allDependencies.each {
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', it.group)
+                    dependencyNode.appendNode('artifactId', it.name)
+                    dependencyNode.appendNode('version', it.version)
+                }
+            }
+        }
+    }
+}

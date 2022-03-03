@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="PreferenceSet">
+
+        <attr name="p_mode" format="enum" />
+        <attr name="p_title" format="string|reference" />
+        <attr name="p_content" format="string|reference" />
+        <attr name="p_enabled" format="boolean" />
+
+    </declare-styleable>
+</resources>
