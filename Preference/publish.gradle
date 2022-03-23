@@ -3,8 +3,8 @@ apply plugin: 'maven-publish'
 def githubProperties = new Properties()
 githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
 
-def LIB_GROUP_ID = 'com.longseong.preferencehelper'
-def LIB_ARTIFACT_ID = 'preferencehelper'
+def LIB_GROUP_ID = 'com.longseong.preference'
+def LIB_ARTIFACT_ID = 'preference'
 def LIB_VERSION = '1.0.0'
 
 task sourceJar(type: Jar) {
@@ -27,7 +27,7 @@ publishing {
             groupId LIB_GROUP_ID
             artifactId LIB_ARTIFACT_ID
             version LIB_VERSION
-            artifact("$buildDir/outputs/aar/PreferenceHelper-release.aar")
+            artifact("$buildDir/outputs/aar/Preference-release.aar")
             artifact(sourceJar)
 
             pom.withXml {
