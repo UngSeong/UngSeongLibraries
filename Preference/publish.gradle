@@ -14,7 +14,7 @@ task sourceJar(type: Jar) {
 publishing {
     repositories {
         maven {
-            name = 'PreferenceHelper'
+            name = 'GithubPackages'
             url "https://maven.pkg.github.com/LongSeong/LongSeongLibraries"
             credentials {
                 username = githubProperties['github_username'] ?: System.getenv("github_username")

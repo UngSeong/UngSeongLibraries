@@ -1,4 +1,4 @@
-package com.example.preferencehelper;
+package com.longseong.preference;
 
 import org.junit.Test;
 

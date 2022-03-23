@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- 설정값 타입 -->
+    <attr name="preference_type">
+        <!-- 일반 형태 -->
+        <enum name="explainType" value="0" />
+        <!-- 텍스트 입력 형태 -->
+        <enum name="textType" value="1" />
+        <!-- 라디오 형태 -->
+        <enum name="radioType" value="2" />
+        <!-- 시크바 형태 -->
+        <enum name="seekBarType" value="3" />
+        <!-- 인텐트 형태 -->
+        <enum name="intentType" value="4" />
+        <!-- 이벤트 형태 -->
+        <enum name="eventType" value="5" />
+    </attr>
+    <!-- 설정값 제목 -->
+    <attr name="preference_title" format="string|reference" />
+    <!-- 설정값 설명 -->
+    <attr name="preference_description" format="string|reference" />
+    <!-- 설정값 상세 설명 -->
+    <attr name="preference_detailedDescription" format="string|reference" />
+    <!-- 설정값 내용 -->
+    <attr name="preference_contentValue" format="string|reference" />
+    <!-- 설정값 상태 -->
+    <attr name="preference_enabled" format="boolean" />
+    <!-- 설정값 아이콘 -->
+    <attr name="preference_icon" format="reference" />
+
+    <declare-styleable name="PreferenceSet">
+
+        <!-- 설정값 접근용 이름 -->
+        <attr name="preference_accessName" format="string|reference" />
+
+    </declare-styleable>
+
+    <declare-styleable name="PreferenceSet_Preference">
+
+        <!-- 스위치 -->
+        <attr name="preference_switchUsage" format="boolean" />
+        <!-- 라디오 -->
+        <attr name="preference_radioMap" format="reference" />
+        <!-- 시크바 -->
+        <attr name="preference_defaultProgress" format="integer" />
+        <attr name="preference_maxProgress" format="integer" />
+        <attr name="preference_minProgress" format="integer" />
+        <attr name="preference_replaceIcon" format="boolean" />
+        <!-- 공통 -->
+        <attr name="preference_type" />
+        <attr name="preference_title" />
+        <attr name="preference_description" />
+        <attr name="preference_detailedDescription" />
+        <attr name="preference_contentValue" />
+        <attr name="preference_enabled" />
+        <attr name="preference_icon"/>
+
+    </declare-styleable>
+
+    <declare-styleable name="map">
+
+    </declare-styleable>
+
+    <declare-styleable name="map_entry">
+
+        <attr name="key" format="string|reference" />
+        <attr name="title" format="string|reference" />
+        <attr name="description" format="string|reference" />
+
+    </declare-styleable>
+</resources>
