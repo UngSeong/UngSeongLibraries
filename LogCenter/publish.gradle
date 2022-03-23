@@ -21,10 +21,6 @@ publishing {
                 password = githubProperties['github_access_token'] ?: System.getenv("github_access_token")
             }
         }
-        maven {
-            name = 'CustomMavenRepo'
-            url = "file://${buildDir}/repo"
-        }
     }
     publications {
         deploy(MavenPublication) {

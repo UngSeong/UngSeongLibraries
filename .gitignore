@@ -2,7 +2,6 @@
 .gradle
 /local.properties
 /github.properties
-/version.properties
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml

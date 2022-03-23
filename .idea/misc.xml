@@ -8,6 +8,32 @@
         <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/LogCenter/src/main/res/drawable/logcenter_ic_clear_log.xml" value="0.157" />
         <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/LogCenter/src/main/res/layout/logcenter_bg_activity_log.xml" value="0.1" />
         <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/LogCenter/src/main/res/menu/logcenter_menu_log.xml" value="0.3619791666666667" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/drawable/ic_preference_intent_option.xml" value="0.1855" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/drawable/preference_text_title_color.xml" value="0.166" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/drawable/ripple_dialog_button.xml" value="0.166" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/drawable/test_divider.xml" value="0.166" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/drawable/test_shape.xml" value="0.166" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/activity_preference.xml" value="0.27291666666666664" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/dialog_item_text_type.xml" value="0.27291666666666664" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/list_item_preference.xml" value="0.2" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/preference_item.xml" value="0.358695652173913" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/preference_item_explain.xml" value="0.33" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/preference_item_main.xml" value="0.25416666666666665" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/preference_item_radio.xml" value="0.2859375" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/preference_item_radio_group.xml" value="0.25416666666666665" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/preference_item_radio_group_item.xml" value="0.25" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/preference_item_sub.xml" value="0.25416666666666665" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/preference_item_sub_list.xml" value="0.14719202898550723" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/preference_list_item.xml" value="0.19114583333333332" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/preference_list_item_preference.xml" value="0.2947916666666667" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/preference_list_item_preference_intent.xml" value="0.259375" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/preference_list_item_preference_seekbar.xml" value="0.2947916666666667" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/preference_list_item_radio.xml" value="0.19114583333333332" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/radio_group_item.xml" value="0.25416666666666665" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/support_toolbar.xml" value="0.25" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/test_dialog.xml" value="0.358695652173913" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/layout/tv.xml" value="0.2947916666666667" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/xml/asd.xml" value="0.12447916666666667" />
         <entry key="..\:/KSU/AndroidStudio/LongSeongLibraries/LogCenter/src/main/res/drawable/ic_clear_log.xml" value="0.176" />
         <entry key="..\:/KSU/AndroidStudio/LongSeongLibraries/LogCenter/src/main/res/drawable/ic_launcher_background.xml" value="0.176" />
         <entry key="..\:/KSU/AndroidStudio/LongSeongLibraries/LogCenter/src/main/res/drawable/ic_logcat.xml" value="0.176" />
