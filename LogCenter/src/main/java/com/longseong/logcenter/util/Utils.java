@@ -1,4 +1,4 @@
-package com.longseong.logcenter;
+package com.longseong.logcenter.util;
 
 import android.content.Context;
 import android.text.format.DateFormat;

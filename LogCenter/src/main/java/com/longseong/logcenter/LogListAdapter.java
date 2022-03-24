@@ -1,23 +1,22 @@
-package com.longseong.logcenter.log;
+package com.longseong.logcenter;
 
-import static com.longseong.logcenter.Utils.Now;
-import static com.longseong.logcenter.Utils.FLAG_DATE;
-import static com.longseong.logcenter.Utils.FLAG_HOUR;
-import static com.longseong.logcenter.Utils.FLAG_MILLIS;
-import static com.longseong.logcenter.Utils.FLAG_MINUTE;
-import static com.longseong.logcenter.Utils.FLAG_MONTH;
-import static com.longseong.logcenter.Utils.FLAG_SECOND;
-import static com.longseong.logcenter.Utils.enhancedFormatDate;
+import static com.longseong.logcenter.util.Utils.Now;
+import static com.longseong.logcenter.util.Utils.FLAG_DATE;
+import static com.longseong.logcenter.util.Utils.FLAG_HOUR;
+import static com.longseong.logcenter.util.Utils.FLAG_MILLIS;
+import static com.longseong.logcenter.util.Utils.FLAG_MINUTE;
+import static com.longseong.logcenter.util.Utils.FLAG_MONTH;
+import static com.longseong.logcenter.util.Utils.FLAG_SECOND;
+import static com.longseong.logcenter.util.Utils.enhancedFormatDate;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.longseong.logcenter.R;
 
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -54,6 +53,14 @@ public class LogListAdapter extends RecyclerView.Adapter<LogListAdapter.ViewHold
             holder.time.setText(timeText);
             holder.stackTrace.setText(stackTracedString);
 
+            holder.itemView.setOnClickListener(v -> {
+                if (holder.stackTrace.getMaxLines() == 4) {
+                    holder.stackTrace.setMaxLines(Integer.MAX_VALUE);
+                } else if (holder.stackTrace.getMaxLines() == Integer.MAX_VALUE) {
+                    holder.stackTrace.setMaxLines(4);
+                }
+            });
+
     }
 
     @Override
@@ -73,8 +80,8 @@ public class LogListAdapter extends RecyclerView.Adapter<LogListAdapter.ViewHold
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            time = itemView.findViewById(R.id.tv_time);
-            stackTrace = itemView.findViewById(R.id.tv_stack_trace);
+            time = itemView.findViewById(R.id.log_item_title_time);
+            stackTrace = itemView.findViewById(R.id.log_item_message);
         }
     }
 }

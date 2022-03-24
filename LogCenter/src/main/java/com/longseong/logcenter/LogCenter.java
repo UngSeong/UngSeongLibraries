@@ -1,11 +1,11 @@
-package com.longseong.logcenter.log;
+package com.longseong.logcenter;
 
-import static com.longseong.logcenter.Utils.Now;
-import static com.longseong.logcenter.Utils.getLogFolder;
+import static com.longseong.logcenter.util.Utils.Now;
+import static com.longseong.logcenter.util.Utils.getLogFolder;
 
 import android.content.Context;
 
-import com.longseong.logcenter.Utils;
+import com.longseong.logcenter.util.Utils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -27,11 +27,13 @@ public class LogCenter {
 
     private static boolean LOG_FOLDER_EXIST;
 
+    private static LogPostedListener mLogPostedListener;
+
     private static String stackTraceToString(Exception e) {
         StringWriter stringWriter = new StringWriter();
         PrintWriter printWriter = new PrintWriter(stringWriter);
         e.printStackTrace(printWriter);
-        return printWriter.toString();
+        return stringWriter.toString();
     }
 
     private static void maintenanceLogFiles(Context context) {
@@ -85,6 +87,10 @@ public class LogCenter {
                     i++;
                 }
             }
+
+            if (mLogPostedListener != null) {
+                mLogPostedListener.onLogPosted(rootFile.list().length - 1);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -129,7 +135,7 @@ public class LogCenter {
         return logSet;
     }
 
-    /*default*/
+    /*package-private*/
     static void clearLogcat(Context context) {
         File rootFile = getLogFolder(context);
 
@@ -142,8 +148,16 @@ public class LogCenter {
         }
     }
 
+    public static void registerLogAddedListener(LogPostedListener logPostedListener) {
+        mLogPostedListener = logPostedListener;
+    }
+
     private LogCenter() {
 
+    }
+
+    interface LogPostedListener {
+        void onLogPosted(int postedIndex);
     }
 
     public static class Log {
