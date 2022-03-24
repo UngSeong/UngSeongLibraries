@@ -6,10 +6,16 @@
         <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/LogCenter/src/main/res/drawable/ic_logcat.xml" value="0.1075" />
         <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/LogCenter/src/main/res/drawable/logcenter_alarm_list_item.xml" value="0.157" />
         <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/LogCenter/src/main/res/drawable/logcenter_ic_clear_log.xml" value="0.157" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/LogCenter/src/main/res/drawable/v21_log_selector.xml" value="0.1185" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/LogCenter/src/main/res/layout-v23/logcenter_list_log_item.xml" value="0.21965579710144928" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/LogCenter/src/main/res/layout/logcenter_activity_log.xml" value="0.19067028985507245" />
         <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/LogCenter/src/main/res/layout/logcenter_bg_activity_log.xml" value="0.1" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/LogCenter/src/main/res/layout/logcenter_list_log_item.xml" value="0.5822959889349931" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/LogCenter/src/main/res/layout/support_toolbar.xml" value="0.21965579710144928" />
         <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/LogCenter/src/main/res/menu/logcenter_menu_log.xml" value="0.3619791666666667" />
         <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/Preference/src/main/res/drawable/ic_preference_intent_option.xml" value="0.1735" />
         <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/Preference/src/main/res/layout/preference_list_item_preference.xml" value="0.17603850050658562" />
+        <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/Preference/src/main/res/layout/preference_list_item_preference_seekbar.xml" value="0.21965579710144928" />
         <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/drawable/ic_preference_intent_option.xml" value="0.1855" />
         <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/drawable/preference_text_title_color.xml" value="0.166" />
         <entry key="..\:/KSU/AndroidProjects/LongSeongLibraries/PreferenceHelper/src/main/res/drawable/ripple_dialog_button.xml" value="0.166" />
