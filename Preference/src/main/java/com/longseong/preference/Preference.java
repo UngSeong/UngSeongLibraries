@@ -161,7 +161,7 @@ public class Preference {
         return mContentValueRaw;
     }
 
-    protected void setContentValueRaw(String contentValueRaw) {
+    public void setContentValueRaw(String contentValueRaw) {
         this.mContentValueRaw = contentValueRaw;
     }
 
@@ -259,9 +259,10 @@ public class Preference {
             return !(equals(SEEK_BAR_TYPE) || equals(INTENT_TYPE) || equals(EVENT_TYPE));
         }
 
-        public boolean intentAvailable() {
+        /*public boolean intentAvailable() {
             return !(equals(SEEK_BAR_TYPE) || equals(TEXT_TYPE) || equals(EVENT_TYPE));
-        }
+        }*/
+
     }
 
     public static class Basic {
@@ -514,16 +515,36 @@ public class Preference {
             return mProgressRaw;
         }
 
+        public int getDefaultValue() {
+            return mDefaultValue;
+        }
+
+        public void setDefaultValue(int mDefaultValue) {
+            this.mDefaultValue = mDefaultValue;
+        }
+
         public int getMaxValue() {
             return mMaxValue;
+        }
+
+        public void setMaxValue(int mMaxValue) {
+            this.mMaxValue = mMaxValue;
         }
 
         public int getMinValue() {
             return mMinValue;
         }
 
-        public boolean isMuteButtonValid() {
-            return mMuteUsing;
+        public void setMinValue(int mMinValue) {
+            this.mMinValue = mMinValue;
+        }
+
+        public boolean isIconHolderUsing() {
+            return mIconUsing || mReplaceIcon;
+        }
+
+        public boolean isMutable() {
+            return mMuteUsing && mMinValue == 0;
         }
 
         public int getIconRes() {
@@ -590,6 +611,11 @@ public class Preference {
             }
         }
 
+        public boolean isLaunchable() {
+            return isValid() && mLauncher != null &&
+                    (mDefaultIntent != null || mDefaultUri != null);
+        }
+
         public void setDefaultIntent(android.content.Intent intent) {
             mDefaultIntent = intent;
         }
@@ -606,7 +632,8 @@ public class Preference {
             return mLauncher;
         }
 
-        /*default*/ void launch() {
+        /*package-private*/
+        void launch() {
 
             try {
                 mLauncher.launch(mDefaultIntent);
@@ -807,21 +834,19 @@ public class Preference {
         }
 
         public Builder setSeekBar(int defaultValue, int max, int min, @DrawableRes int iconRes, boolean replaceIcon) {
-            if (mType.equals(Type.SEEK_BAR_TYPE)) {
-                mSeekBarEnabled = true;
-                mSeekBarDefaultValue = defaultValue;
-                mSeekBarMax = max;
-                mSeekBarMin = min;
-                mSeekBarIconRes = iconRes;
-                mSeekBarReplaceIcon = replaceIcon;
-            } else {
-                mSeekBarEnabled = false;
-            }
+
+            mSeekBarEnabled = mType.equals(Type.SEEK_BAR_TYPE);
+            mSeekBarDefaultValue = defaultValue;
+            mSeekBarMax = max;
+            mSeekBarMin = min;
+            mSeekBarIconRes = iconRes;
+            mSeekBarReplaceIcon = replaceIcon;
+
             return this;
         }
 
-        public Builder setIntent(boolean intentUsage, @DrawableRes int intentIconRes) {
-            mIntentUsage = intentUsage;
+        public Builder setIntent(@DrawableRes int intentIconRes) {
+            mIntentUsage = mType.equals(Type.INTENT_TYPE);
             mIntentIconRes = intentIconRes;
             return this;
         }
@@ -840,7 +865,7 @@ public class Preference {
 
             preference.initSeekBar(mSeekBarEnabled, mSeekBarDefaultValue, mSeekBarMax, mSeekBarMin, mSeekBarIconRes, mSeekBarReplaceIcon);
 
-            preference.initIntent(mType.intentAvailable(), mIntentIconRes/* && mIntentUsage*/);
+            preference.initIntent(mType.equals(Type.INTENT_TYPE), mIntentIconRes/* && mIntentUsage*/);
 
             preference.initEvent(mType.equals(Type.EVENT_TYPE));
 

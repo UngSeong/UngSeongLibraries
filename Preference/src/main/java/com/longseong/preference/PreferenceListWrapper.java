@@ -120,7 +120,7 @@ public class PreferenceListWrapper {
                     //event 타입의 설정값 클릭시 이벤트
                     return eventTypedPreferenceLongClickEvent(holder, preference);
                 }
-                return true;
+                return false;
             });
 
             if (!preference.isEnabled()) {
@@ -174,35 +174,39 @@ public class PreferenceListWrapper {
         int max = seekBarData.getMaxValue();
         int min = seekBarData.getMinValue();
 
-        boolean mutable = seekBarData.isMuted() || ((min == progress) && (progress == 0));
-        boolean showIcon = seekBarData.isMuteButtonValid();
-        boolean icon = seekBarData.isReplaceIcon();
+        boolean muted = seekBarData.isMuted() || ((min == progress) && (progress == 0));
+        boolean showIcon = seekBarData.isIconHolderUsing();
+        boolean replaceIcon = seekBarData.isReplaceIcon();
 
         holder.mContentSeekBar.setMin(min);
         holder.mContentSeekBar.setMax(max);
         holder.mContentSeekBar.setProgress(progress);
-        holder.setMute(mutable);
+        holder.setMute(muted);
         holder.showIcon(showIcon);
         if (showIcon) {
-            holder.replaceIcon(seekBarData.isReplaceIcon());
+            holder.replaceIcon(replaceIcon);
             holder.setIcon(holder.itemView.getContext(), seekBarData.getIconRes());
-            holder.mContentValueHolder.setOnClickListener(v -> {
-                seekBarData.toggleMute();
-                holder.setMute(seekBarData.isMuted());
-                holder.setContentValue(seekBarData.getProgressRaw() + "", preference);
+            holder.setContentValue(seekBarData.getProgressRaw() + "", preference);
+            holder.setMuteUsing(seekBarData.isMutable());
+            if (seekBarData.isMutable()) {
+                holder.mContentValueHolder.setOnClickListener(v -> {
+                    seekBarData.toggleMute();
+                    holder.setMute(seekBarData.isMuted());
+                    holder.setContentValue(seekBarData.getProgressRaw() + "", preference);
 
-                preference.setContentValue(seekBarData.getProgressValue() + "");
-                mPreferenceManager.savePreferenceContentValue(preference);
+                    preference.setContentValue(seekBarData.getProgressValue() + "");
+                    mPreferenceManager.savePreferenceContentValue(preference);
 
-                if (seekBarData.isMuted()) {
-                    holder.mContentSeekBar.setProgress(seekBarData.getMinValue(), true);
-                } else {
-                    if (seekBarData.getProgressRaw() == min) {
-                        seekBarData.resetProgressToDefault();
+                    if (seekBarData.isMuted()) {
+                        holder.mContentSeekBar.setProgress(seekBarData.getMinValue(), true);
+                    } else {
+                        if (seekBarData.getProgressRaw() == min) {
+                            seekBarData.resetProgressToDefault();
+                        }
+                        holder.mContentSeekBar.setProgress(seekBarData.getProgressRaw(), true);
                     }
-                    holder.mContentSeekBar.setProgress(seekBarData.getProgressRaw(), true);
-                }
-            });
+                });
+            }
         }
         holder.mContentSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -304,8 +308,10 @@ public class PreferenceListWrapper {
     }
 
     private void intentTypedPreferenceClickEvent(PreferenceViewHolder holder, Preference preference) {
-        if (preference.getIntent().isValid()) {
+        if (preference.getIntent().isLaunchable()) {
             preference.getIntent().launch();
+        } else {
+            Toast.makeText(mContext, "인텐트 지정되지 않았습니다.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -398,7 +404,7 @@ public class PreferenceListWrapper {
                 });
     }
 
-    protected static class PreferenceViewHolder extends ViewHolder {
+    public static class PreferenceViewHolder extends ViewHolder {
 
         protected final TextView mContentValue;
         protected final SwitchCompat mSwitch;
@@ -451,7 +457,7 @@ public class PreferenceListWrapper {
         }
     }
 
-    protected static class RadioViewHolder extends ViewHolder {
+    public static class RadioViewHolder extends ViewHolder {
 
         private final TextView mContentValue;
         private final RadioButton mRadioButton;
@@ -473,7 +479,7 @@ public class PreferenceListWrapper {
         }
     }
 
-    protected static class PreferenceSeekBarViewHolder extends PreferenceViewHolder {
+    public static class PreferenceSeekBarViewHolder extends PreferenceViewHolder {
 
         private FrameLayout mContentValueHolder;
         private ImageView mContentValueIcon;
@@ -492,10 +498,18 @@ public class PreferenceListWrapper {
 
         @Override
         public void setContentValue(@NonNull String contentValue, Preference preference) {
-            if (preference.getSeekBar().isMuteButtonValid()) {
+            if (preference.getSeekBar().isIconHolderUsing()) {
                 if (preference.getSeekBar().isReplaceIcon()) {
                     mContentValue.setText(contentValue);
                 }
+            }
+        }
+
+        public void setMuteUsing(boolean muteUsing) {
+            if (!muteUsing) {
+                mContentValueHolder.setClickable(false);
+                mContentValueHolder.setFocusable(false);
+                mContentValueHolder.setBackground(null);
             }
         }
 

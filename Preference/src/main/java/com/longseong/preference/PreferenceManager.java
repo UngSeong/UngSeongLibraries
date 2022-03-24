@@ -53,9 +53,9 @@ public class PreferenceManager {
     public static final String ATTRIBUTE_SWITCH_USAGE = "preference_switchUsage";
     public static final String ATTRIBUTE_INPUT_TYPE = "inputType";
     public static final String ATTRIBUTE_RADIO_MAP = "preference_radioMap";
-    public static final String ATTRIBUTE_DEFAULT_PROGRESS = "preference_defaultProgress";
-    public static final String ATTRIBUTE_MAX_PROGRESS = "preference_maxProgress";
-    public static final String ATTRIBUTE_MIN_PROGRESS = "preference_minProgress";
+    public static final String ATTRIBUTE_DEFAULT_PROGRESS = "preference_progressDefault";
+    public static final String ATTRIBUTE_MAX_PROGRESS = "preference_progressMax";
+    public static final String ATTRIBUTE_MIN_PROGRESS = "preference_progressMin";
     public static final String ATTRIBUTE_REPLACE_ICON = "preference_replaceIcon";
 
     public static final String SWITCH_VALUE = "_switchValue";
@@ -114,9 +114,10 @@ public class PreferenceManager {
         }
     }
 
-    private void setPreferenceCreatedListener(PreferenceViewCreatedListener listener) {
+    public void setPreferenceCreatedListener(PreferenceViewCreatedListener listener) {
         if (listener == null) {
-            mPreferenceViewCreatedListener = (manager, preference, isUpperCase) -> {};
+            mPreferenceViewCreatedListener = (manager, preference, isUpperCase) -> {
+            };
         } else {
             mPreferenceViewCreatedListener = listener;
         }
@@ -315,11 +316,8 @@ public class PreferenceManager {
                         }
                     }
 
-                    if (Preference.Type.SEEK_BAR_TYPE.equals(typeOfBuilder) && (maxProgress >= defaultProgress) && (defaultProgress >= minProgress) && (maxProgress > minProgress)) {
-                        builderCursor.setSeekBar(defaultProgress, maxProgress, minProgress, icon, replaceIcon);
-                    } else if (Preference.Type.INTENT_TYPE.equals(typeOfBuilder)) {
-                        builderCursor.setIntent(true, icon);
-                    }
+                    builderCursor.setSeekBar(defaultProgress, maxProgress, minProgress, icon, replaceIcon);
+                    builderCursor.setIntent(icon);
 
                 } else if (eventType == XmlResourceParser.END_TAG) {
 
@@ -392,7 +390,7 @@ public class PreferenceManager {
         editor.apply();
     }
 
-    protected void savePreferenceContentValueRaw(Preference preference) {
+    public void savePreferenceContentValueRaw(Preference preference) {
         preference = mSaveOptimizer.optimize(this, preference, SaveOptimizer.FLAG_SAVE_CONTENT_VALUE_RAW);
 
         SharedPreferences.Editor editor = mSharedPreferences.edit();
@@ -433,7 +431,7 @@ public class PreferenceManager {
             savePreferenceContentValue(preference);
         }
         if (!mSharedPreferences.contains(preference.getAccessName() + CONTENT_VALUE_RAW) || contentValue.equals(preference.getContentValue())) {
-            savePreferenceSwitchValue(preference);
+            savePreferenceContentValueRaw(preference);
         }
     }
 
