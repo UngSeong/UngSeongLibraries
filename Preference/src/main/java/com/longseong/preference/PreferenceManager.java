@@ -186,18 +186,16 @@ public class PreferenceManager {
                 }
             }
 
-            if ("item".equals(element)) {
+            if ("item".equals(element) || "group".equals(element)) {
 
                 if (eventType == XmlResourceParser.START_TAG) {
 
-                    Preference.Type typeOfBuilder = null;
+                    Preference.Type type;
 
                     int defaultProgress = 50;
                     int maxProgress = 100;
                     int minProgress = 0;
                     boolean replaceIcon = true;
-
-                    @DrawableRes int icon = ResourcesCompat.ID_NULL;
 
                     if (builderCursor != null) {
                         builderQueue.push(builderCursor);
@@ -222,8 +220,18 @@ public class PreferenceManager {
                             }
                             case ATTRIBUTE_TYPE: {
                                 if (resId == ResourcesCompat.ID_NULL) {
-                                    typeOfBuilder = Preference.Type.valueOf(parser.getAttributeIntValue(i, Preference.Type.EXPLAIN_TYPE.getValue()));
-                                    builderCursor.setType(typeOfBuilder);
+                                    type = Preference.Type.valueOf(parser.getAttributeIntValue(i, Preference.Type.EXPLAIN_TYPE.getValue()));
+                                    builderCursor.setType(type);
+
+                                    if (type.equals(Preference.Type.INTENT_TYPE)) {
+                                        builderCursor.setIntent();
+                                    }
+                                }
+                                break;
+                            }
+                            case ATTRIBUTE_ICON: {
+                                if (resId != ResourcesCompat.ID_NULL) {
+                                    builderCursor.setIconRes(resId);
                                 }
                                 break;
                             }
@@ -307,23 +315,22 @@ public class PreferenceManager {
                                 }
                                 break;
                             }
-                            case ATTRIBUTE_ICON: {
-                                if (resId != ResourcesCompat.ID_NULL) {
-                                    icon = resId;
-                                }
-                                break;
-                            }
                         }
                     }
 
-                    builderCursor.setSeekBar(defaultProgress, maxProgress, minProgress, icon, replaceIcon);
-                    builderCursor.setIntent(icon);
+                    builderCursor.setSeekBar(defaultProgress, maxProgress, minProgress, replaceIcon);
+                    builderCursor.setIntent();
 
                 } else if (eventType == XmlResourceParser.END_TAG) {
 
                     if (builderCursor == null) continue;
 
-                    Preference preference = builderCursor.create(this);
+                    Preference preference;
+                    if ("item".equals(element)) {
+                        preference = builderCursor.create();
+                    } else {
+                        preference = builderCursor.createGroup();
+                    }
 
                     if (builderQueue.size() == 0) {
                         //최상위 설정값은 필드변수에 대입
@@ -430,7 +437,7 @@ public class PreferenceManager {
         if (!mSharedPreferences.contains(preference.getAccessName() + CONTENT_VALUE) || !contentValue.equals(preference.getContentValue())) {
             savePreferenceContentValue(preference);
         }
-        if (!mSharedPreferences.contains(preference.getAccessName() + CONTENT_VALUE_RAW) || contentValue.equals(preference.getContentValue())) {
+        if (!mSharedPreferences.contains(preference.getAccessName() + CONTENT_VALUE_RAW) || contentValueRaw.equals(preference.getContentValueRaw())) {
             savePreferenceContentValueRaw(preference);
         }
     }

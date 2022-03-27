@@ -1,5 +1,6 @@
 package com.longseong.preference;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.XmlResourceParser;
 import android.net.Uri;
@@ -23,7 +24,6 @@ import java.util.LinkedList;
 import java.util.Objects;
 
 public class Preference {
-
     /**
      * Preference(이하 설정값)의 모든 데이터를 담는 클래스이다.<p>
      * <p>
@@ -50,6 +50,8 @@ public class Preference {
     private final String mAccessName;
     @NonNull
     private final Type mType;
+    @DrawableRes
+    private int mIconRes;
 
     //설정값 데이터
     private String mTitle;
@@ -60,18 +62,19 @@ public class Preference {
     private String mContentValueRaw;
 
     //선택적 개별 데이터
-    private LinkedList<Preference> mSubPreferenceList;
     private Switch mSwitch;
-    private int mInputType;
+    private Text mText;
     private Radio mRadio;
     private SeekBar mSeekBar;
     private Intent mIntent;
     private Event mEvent;
+    private LinkedList<Preference> mSubPreferenceList;
 
-    public Preference(int id, @NonNull String accessName, Type type, String title, String description, String detailedDescription, boolean enabled) {
+    public Preference(int id, @NonNull String accessName, @NonNull Type type, @DrawableRes int iconRes, String title, String description, String detailedDescription, boolean enabled) {
         mId = id;
         mAccessName = accessName;
         mType = type;
+        mIconRes = iconRes;
 
         initData(title, description, detailedDescription, enabled);
     }
@@ -85,31 +88,32 @@ public class Preference {
 
     }
 
-    private void initSubPreferenceList(LinkedList<Preference> subPreferenceList) {
+    protected void initSubPreferenceList(LinkedList<Preference> subPreferenceList) {
         mSubPreferenceList = subPreferenceList;
     }
 
-    private void initSwitch(boolean switchUsage) {
+    protected void initSwitch(boolean switchUsage) {
         mSwitch = new Switch(switchUsage);
     }
 
-    private void initInputType(int inputType) {
-        mInputType = inputType;
+    protected void initInputType(int inputType) {
+        mText = new Text(mType.equals(Type.TEXT_TYPE));
+        mText.setInputType(inputType);
     }
 
-    private void initRadio(boolean enabled, Context context, @XmlRes int xmlResource) {
+    protected void initRadio(boolean enabled, Context context, @XmlRes int xmlResource) {
         mRadio = new Radio(enabled, context, xmlResource);
     }
 
-    private void initSeekBar(boolean enabled, int defaultValue, int max, int min, @DrawableRes int iconRes, boolean replaceIcon) {
-        mSeekBar = new SeekBar(enabled, defaultValue, max, min, iconRes, replaceIcon);
+    protected void initSeekBar(boolean enabled, int defaultValue, int max, int min, boolean replaceIcon) {
+        mSeekBar = new SeekBar(mIconRes, enabled, defaultValue, max, min, replaceIcon);
     }
 
-    private void initIntent(boolean enabled, @DrawableRes int iconRes) {
-        mIntent = new Intent(enabled, iconRes);
+    protected void initIntent(boolean enabled) {
+        mIntent = new Intent(enabled, mIconRes);
     }
 
-    private void initEvent(boolean enabled) {
+    protected void initEvent(boolean enabled) {
         mEvent = new Event(enabled);
     }
 
@@ -123,6 +127,10 @@ public class Preference {
 
     public Type getType() {
         return mType;
+    }
+
+    public int getIconRes() {
+        return mIconRes;
     }
 
     public String getTitle() {
@@ -182,7 +190,7 @@ public class Preference {
     }
 
     public int getInputType() {
-        return mInputType;
+        return mText.mInputType;
     }
 
     public Radio getRadio() {
@@ -265,7 +273,7 @@ public class Preference {
 
     }
 
-    public static class Basic {
+    public abstract static class Basic {
 
         /**
          * 설정값의 특성을 정의하기 위한 기본 클래스이다.<p>
@@ -273,11 +281,11 @@ public class Preference {
          * mEnabled : 특성 사용여부이다. 변경할 수 없다.<p>
          */
 
+        final boolean mEnabled;
+
         protected Basic(boolean enabled) {
             mEnabled = enabled;
         }
-
-        final boolean mEnabled;
 
         public boolean isValid() {
             return mEnabled;
@@ -309,6 +317,38 @@ public class Preference {
 
         public void toggle() {
             mChecked = !mChecked;
+        }
+    }
+
+    public static class Text extends Basic {
+
+        /**
+         * 설정값의 텍스트 다이얼로그의 특성을 담는 클래스이다.<p>
+         * <p>
+         */
+
+        private AlertDialog mDialog;
+        private int mInputType;
+
+        protected Text(boolean enabled) {
+            super(enabled);
+        }
+
+        @Override
+        public boolean isValid() {
+            return super.isValid() && mDialog != null;
+        }
+
+        public void setDialog(AlertDialog dialog) {
+            this.mDialog = dialog;
+        }
+
+        public int getInputType() {
+            return mInputType;
+        }
+
+        public void setInputType(int inputType) {
+            mInputType = inputType;
         }
     }
 
@@ -454,12 +494,10 @@ public class Preference {
         private boolean mMuteUsing;
         private boolean mMuted;
 
-        @DrawableRes
-        private int mIconRes;
         private boolean mIconUsing;
         private boolean mReplaceIcon;
 
-        public SeekBar(boolean enabled, int defaultValue, int max, int min, @DrawableRes int iconRes, boolean replaceIcon, boolean muteUsing) {
+        public SeekBar(@DrawableRes int iconRes, boolean enabled, int defaultValue, int max, int min, boolean replaceIcon, boolean muteUsing) {
             super(enabled);
 
             mDefaultValue = defaultValue;
@@ -468,7 +506,6 @@ public class Preference {
 
             mMuteUsing = muteUsing;
 
-            mIconRes = iconRes;
             mReplaceIcon = replaceIcon;
             if (iconRes == ResourcesCompat.ID_NULL && !mReplaceIcon) {
                 mIconUsing = false;
@@ -476,8 +513,8 @@ public class Preference {
 
         }
 
-        public SeekBar(boolean enabled, int defaultValue, int max, int min, @DrawableRes int iconRes, boolean replaceIcon) {
-            this(enabled, defaultValue, max, min, iconRes, replaceIcon, true);
+        public SeekBar(@DrawableRes int iconRes, boolean enabled, int defaultValue, int max, int min, boolean replaceIcon) {
+            this(iconRes, enabled, defaultValue, max, min, replaceIcon, true);
         }
 
         @Override
@@ -547,10 +584,6 @@ public class Preference {
             return mMuteUsing && mMinValue == 0;
         }
 
-        public int getIconRes() {
-            return mIconRes;
-        }
-
         public void setReplaceIcon(boolean replaceIcon) {
             mReplaceIcon = replaceIcon;
         }
@@ -592,8 +625,6 @@ public class Preference {
         private android.content.Intent mDefaultIntent;
         private Uri mDefaultUri;
 
-        @DrawableRes
-        private int mIconRes;
         private boolean mIconUsing;
 
         public Intent(boolean enabled, @DrawableRes int iconRes) {
@@ -605,7 +636,6 @@ public class Preference {
 
             mLauncher = launcher;
 
-            mIconRes = iconRes;
             if (iconRes != ResourcesCompat.ID_NULL) {
                 mIconUsing = true;
             }
@@ -641,14 +671,6 @@ public class Preference {
                 mLauncher.launch(mDefaultUri);
             }
 
-        }
-
-        public int getIconRes() {
-            return mIconRes;
-        }
-
-        public void setIconRes(@DrawableRes int iconRes) {
-            mIconRes = iconRes;
         }
 
         public boolean isIconUsing() {
@@ -715,10 +737,17 @@ public class Preference {
         //컨텍스트
         Context mContext;
 
-        //데이터
+        //필수 데이터
+        @IdRes
         private int mId;
+        @NonNull
         private String mAccessName;
+        @NonNull
         private Type mType;
+        @DrawableRes
+        private int mIconRes;
+
+        //데이터
         private String mTitle;
         private String mDescription;
         private String mDetailedDescription;
@@ -744,14 +773,10 @@ public class Preference {
         private int mSeekBarDefaultValue;
         private int mSeekBarMax;
         private int mSeekBarMin;
-        @DrawableRes
-        private int mSeekBarIconRes;
         private boolean mSeekBarReplaceIcon;
 
         //인텐트
         private boolean mIntentUsage;
-        @DrawableRes
-        private int mIntentIconRes;
 
         //이벤트
         private boolean mEventUsage;
@@ -760,7 +785,10 @@ public class Preference {
             mContext = context;
 
             mId = ResourcesCompat.ID_NULL;
+            mAccessName = "";
             mType = Type.EXPLAIN_TYPE;
+            mIconRes = ResourcesCompat.ID_NULL;
+
             mTitle = "";
             mDescription = "";
             mDetailedDescription = "";
@@ -780,6 +808,11 @@ public class Preference {
 
         public Builder setType(@NonNull Type type) {
             mType = type;
+            return this;
+        }
+
+        public Builder setIconRes(@DrawableRes int iconRes) {
+            mIconRes = iconRes;
             return this;
         }
 
@@ -833,28 +866,39 @@ public class Preference {
             return this;
         }
 
-        public Builder setSeekBar(int defaultValue, int max, int min, @DrawableRes int iconRes, boolean replaceIcon) {
+        public Builder setSeekBar(int defaultValue, int max, int min, boolean replaceIcon) {
 
             mSeekBarEnabled = mType.equals(Type.SEEK_BAR_TYPE);
             mSeekBarDefaultValue = defaultValue;
             mSeekBarMax = max;
             mSeekBarMin = min;
-            mSeekBarIconRes = iconRes;
             mSeekBarReplaceIcon = replaceIcon;
 
             return this;
         }
 
-        public Builder setIntent(@DrawableRes int intentIconRes) {
+        public Builder setIntent() {
             mIntentUsage = mType.equals(Type.INTENT_TYPE);
-            mIntentIconRes = intentIconRes;
             return this;
         }
 
         @NonNull
-        public Preference create(PreferenceManager manager) {
-            Preference preference = new Preference(mId, mAccessName, mType, mTitle, mDescription, mDetailedDescription, mEnabled);
+        public Preference create() {
+            Preference preference = new Preference(mId, mAccessName, mType, mIconRes, mTitle, mDescription, mDetailedDescription, mEnabled);
+            initPreference(preference);
 
+            return preference;
+        }
+
+        @NonNull
+        public PreferenceGroup createGroup() {
+            PreferenceGroup preferenceGroup = new PreferenceGroup(mId, mAccessName, mTitle, mDescription, mDetailedDescription, mIconRes);
+            initPreference(preferenceGroup);
+
+            return preferenceGroup;
+        }
+
+        private void initPreference(Preference preference) {
             preference.initSubPreferenceList(mSubPreferenceList);
 
             preference.initSwitch(mType.switchAvailable() && mSwitchUsage);
@@ -863,13 +907,12 @@ public class Preference {
 
             preference.initRadio(mRadioEnabled, mContext, mRadioXmlResource);
 
-            preference.initSeekBar(mSeekBarEnabled, mSeekBarDefaultValue, mSeekBarMax, mSeekBarMin, mSeekBarIconRes, mSeekBarReplaceIcon);
+            preference.initSeekBar(mSeekBarEnabled, mSeekBarDefaultValue, mSeekBarMax, mSeekBarMin, mSeekBarReplaceIcon);
 
-            preference.initIntent(mType.equals(Type.INTENT_TYPE), mIntentIconRes/* && mIntentUsage*/);
+            preference.initIntent(mType.equals(Type.INTENT_TYPE)/* && mIntentUsage*/);
 
             preference.initEvent(mType.equals(Type.EVENT_TYPE));
-
-            return preference;
         }
     }
+
 }

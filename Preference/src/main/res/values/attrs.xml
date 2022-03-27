@@ -38,15 +38,6 @@
 
     <declare-styleable name="PreferenceSet_Preference">
 
-        <!-- 스위치 -->
-        <attr name="preference_switchUsage" format="boolean" />
-        <!-- 라디오 -->
-        <attr name="preference_radioMap" format="reference" />
-        <!-- 시크바 -->
-        <attr name="preference_progressDefault" format="integer" />
-        <attr name="preference_progressMax" format="integer" />
-        <attr name="preference_progressMin" format="integer" />
-        <attr name="preference_replaceIcon" format="boolean" />
         <!-- 공통 -->
         <attr name="preference_type" />
         <attr name="preference_title" />
@@ -55,6 +46,27 @@
         <attr name="preference_contentValue" />
         <attr name="preference_enabled" />
         <attr name="preference_icon"/>
+
+        <!-- 스위치 -->
+        <attr name="preference_switchUsage" format="boolean" />
+
+        <!-- 텍스트 -->
+        <!-- android:inputType 사용 -->
+
+        <!-- 라디오 -->
+        <attr name="preference_radioMap" format="reference" />
+
+        <!-- 시크바 -->
+        <attr name="preference_progressDefault" format="integer" />
+        <attr name="preference_progressMax" format="integer" />
+        <attr name="preference_progressMin" format="integer" />
+        <attr name="preference_replaceIcon" format="boolean" />
+
+        <!-- 인텐트 -->
+        <!-- PreferenceManager.OnPreferenceCreatedListener 사용 -->
+
+        <!-- 이벤트 -->
+        <!-- PreferenceManager.OnPreferenceCreatedListener 사용 -->
 
     </declare-styleable>
 

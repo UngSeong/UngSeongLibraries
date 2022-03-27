@@ -159,7 +159,7 @@ public class PreferenceActivity extends AppCompatActivity {
     }
 
     private void initDetailedDescriptionView() {
-        if (!mPreference.getDetailedDescription().equals("")) {
+        if (!mPreference.getDetailedDescription().equals("") && !(mPreference instanceof PreferenceGroup)) {
             mDetailedContent = findViewById(R.id.preference_detailedContent);
             mDetailedContent.setVisibility(View.VISIBLE);
             mDetailedContent.setText(mPreference.getDetailedDescription());

@@ -5,9 +5,13 @@ import static com.longseong.preference.PreferenceActivity.INTENT_KEY_ROOT_PREFER
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,10 +30,12 @@ import com.longseong.preference.Preference.Type;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 
 import java.util.LinkedList;
@@ -67,7 +73,7 @@ public class PreferenceListWrapper {
             PreferenceViewHolder holder;
             if (preference.getType().equals(Type.SEEK_BAR_TYPE)) {
                 holder = new PreferenceSeekBarViewHolder(LayoutInflater.from(mContext).inflate(R.layout.preference_list_item_preference_seekbar, linearLayout, false));
-            } else if (preference.getType().equals(Type.INTENT_TYPE)) {
+            } else if (preference.getType().equals(Type.INTENT_TYPE) || preference instanceof PreferenceGroup) {
                 holder = new PreferenceIntentViewHolder(LayoutInflater.from(mContext).inflate(R.layout.preference_list_item_preference_intent, linearLayout, false));
             } else {
                 holder = new PreferenceViewHolder(LayoutInflater.from(mContext).inflate(R.layout.preference_list_item_preference, linearLayout, false));
@@ -140,11 +146,11 @@ public class PreferenceListWrapper {
     }
 
     private void initIndividualLayout(Preference preference, PreferenceViewHolder holder) {
-        if (preference.getSwitch().isValid()) {
+        if (preference.getSwitch().isValid() && !(preference instanceof PreferenceGroup)) {
             initSwitchView(holder, preference);
         } else if (preference.getSeekBar().isValid()) {
             initSeekBarView((PreferenceSeekBarViewHolder) holder, preference);
-        } else if (preference.getIntent().isValid()) {
+        } else if (preference.getIntent().isValid() || preference instanceof PreferenceGroup) {
             initIntentView((PreferenceIntentViewHolder) holder, preference);
         }
     }
@@ -185,7 +191,7 @@ public class PreferenceListWrapper {
         holder.showIcon(showIcon);
         if (showIcon) {
             holder.replaceIcon(replaceIcon);
-            holder.setIcon(holder.itemView.getContext(), seekBarData.getIconRes());
+            holder.setIcon(holder.itemView.getContext(), preference.getIconRes());
             holder.setContentValue(seekBarData.getProgressRaw() + "", preference);
             holder.setMuteUsing(seekBarData.isMutable());
             if (seekBarData.isMutable()) {
@@ -237,8 +243,10 @@ public class PreferenceListWrapper {
     }
 
     private void initIntentView(PreferenceIntentViewHolder holder, Preference preference) {
-        Preference.Intent intentData = preference.getIntent();
-        holder.setIcon(holder.itemView.getContext(), intentData.getIconRes());
+        holder.setIcon(mContext, preference.getIconRes());
+        if (preference instanceof PreferenceGroup) {
+            holder.setIconTint();
+        }
     }
 
     private void explainTypedPreferenceClickEvent(PreferenceViewHolder holder, Preference preference) {
@@ -565,21 +573,21 @@ public class PreferenceListWrapper {
 
     public static class PreferenceIntentViewHolder extends PreferenceViewHolder {
 
-        private ImageView mIntentIcon;
-        private FrameLayout mIntentIconLayout;
+        private ImageView mIconView;
+        private FrameLayout mIconLayout;
 
         public PreferenceIntentViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            mIntentIconLayout = itemView.findViewById(R.id.preference_intent_icon_layout);
-            mIntentIcon = itemView.findViewById(R.id.preference_intent_icon);
+            mIconLayout = itemView.findViewById(R.id.preference_icon_layout);
+            mIconView = itemView.findViewById(R.id.preference_icon);
         }
 
         public void showIcon(boolean visible) {
             if (visible) {
-                mIntentIconLayout.setVisibility(View.VISIBLE);
+                mIconLayout.setVisibility(View.VISIBLE);
             } else {
-                mIntentIconLayout.setVisibility(View.GONE);
+                mIconLayout.setVisibility(View.GONE);
             }
         }
 
@@ -589,12 +597,22 @@ public class PreferenceListWrapper {
                 return;
             }
             Drawable drawable = ResourcesCompat.getDrawable(context.getResources(), iconRes, null);
-            mIntentIcon.setImageDrawable(drawable);
+            mIconView.setImageDrawable(drawable);
             showIcon(true);
         }
 
+        public void setIconTint() {
+            TypedValue typedValue = new TypedValue();
+
+            TypedArray a = itemView.getContext().obtainStyledAttributes(typedValue.data, new int[] { androidx.appcompat.R.attr.colorPrimary });
+            int color = a.getColor(0, 0);
+
+            a.recycle();
+            mIconView.setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+
         @Override
-        public void setSwitch(boolean visible) {
+        public void setSwitch(boolean checked) {
         }
 
         @Override

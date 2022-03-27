@@ -11,7 +11,7 @@
     android:paddingEnd="24dp">
 
     <FrameLayout
-        android:id="@+id/preference_intent_icon_layout"
+        android:id="@+id/preference_icon_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingStart="0dp"
@@ -23,7 +23,7 @@
         tools:visibility="visible">
 
         <ImageView
-            android:id="@+id/preference_intent_icon"
+            android:id="@+id/preference_icon"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:scaleType="fitCenter"
@@ -42,7 +42,7 @@
         android:paddingBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/preference_intent_icon_layout"
+        app:layout_constraintStart_toEndOf="@id/preference_icon_layout"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
