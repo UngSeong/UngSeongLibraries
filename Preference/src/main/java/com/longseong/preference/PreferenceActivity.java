@@ -20,6 +20,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.longseong.preference.R;
+
 public class PreferenceActivity extends AppCompatActivity {
 
     public static final String INTENT_KEY_ROOT_PREFERENCE_ID = "intent.key.root_id";
@@ -70,7 +72,7 @@ public class PreferenceActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                this.finish();
+                finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);
@@ -84,7 +86,7 @@ public class PreferenceActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
+        mPreferenceManager.destroyViewHolder(this);
     }
 
     public Preference getMainPreference() {
@@ -117,7 +119,7 @@ public class PreferenceActivity extends AppCompatActivity {
 
         mPreferenceManager = PreferenceManager.getInstance(this);
         mPreference = PreferenceManager.getPreferenceMap().get(id);
-        mPreferenceListWrapper = new PreferenceListWrapper(this);
+        mPreferenceListWrapper = new PreferenceListWrapper(this, mPreference);
 
         if (mPreference == null) {
             Toast.makeText(this, "설정값을 찾을 수 없습니다.", Toast.LENGTH_SHORT).show();

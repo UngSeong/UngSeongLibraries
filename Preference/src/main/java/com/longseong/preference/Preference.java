@@ -23,6 +23,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Objects;
 
+import com.longseong.preference.R;
+
 public class Preference {
     /**
      * Preference(이하 설정값)의 모든 데이터를 담는 클래스이다.<p>

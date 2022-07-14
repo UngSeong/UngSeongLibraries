@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.LinearLayout;
 
-import androidx.annotation.DrawableRes;
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,6 +25,8 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
+
+import com.longseong.preference.R;
 
 public class PreferenceManager {
 
@@ -95,6 +96,7 @@ public class PreferenceManager {
     }
 
     private final LinkedHashMap<Integer, Preference> mPreferenceMap = new LinkedHashMap<>();
+    private final LinkedHashMap<Integer, ViewHolder> mViewHolderMap = new LinkedHashMap<>();
 
     private final LinkedList<Preference> mPreferenceList;
 
@@ -142,6 +144,22 @@ public class PreferenceManager {
 
     public Preference getPreferenceById(@IdRes int id) {
         return mPreferenceMap.get(id);
+    }
+
+    protected void addViewHolder(ViewHolder holder) {
+        mViewHolderMap.put(holder.mPreference.getId(), holder);
+    }
+
+    protected void destroyViewHolder(Activity activity) {
+        mViewHolderMap.entrySet().removeIf(integerViewHolderEntry -> ((Activity) integerViewHolderEntry.getValue().itemView.getContext()).isDestroyed());
+    }
+
+    public ViewHolder getViewHolder(Preference preference) {
+        return getViewHolder(preference.getId());
+    }
+
+    public ViewHolder getViewHolder(int id) {
+        return mViewHolderMap.get(id);
     }
 
     public LinkedList<Preference> getPreferenceList() {

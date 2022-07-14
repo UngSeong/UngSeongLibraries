@@ -5,7 +5,6 @@ import static com.longseong.preference.PreferenceActivity.INTENT_KEY_ROOT_PREFER
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -26,64 +25,58 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.longseong.preference.Preference.Type;
-
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
-import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
+
+import com.longseong.preference.Preference.Type;
 
 import java.util.LinkedList;
 import java.util.Map;
+
+import com.longseong.preference.R;
 
 public class PreferenceListWrapper {
 
     private final AppCompatActivity mContext;
     private final PreferenceManager mPreferenceManager;
 
-    private final LinkedList<LinkedList<ViewHolder>> holderList = new LinkedList<>();
-
     private ActivityResultLauncher<Intent> mPreferenceLauncher;
 
-    public PreferenceListWrapper(AppCompatActivity activityContext) {
+    protected PreferenceListWrapper(AppCompatActivity activityContext) {
+        this(activityContext, null);
+    }
+
+    public PreferenceListWrapper(AppCompatActivity activityContext, @NonNull  Preference preference) {
         mContext = activityContext;
         mPreferenceManager = PreferenceManager.getInstance(activityContext);
         if (mContext instanceof PreferenceActivity) {
-            setResultLauncher((PreferenceActivity) activityContext, ((PreferenceActivity) activityContext).getMainPreference());
+            setResultLauncher(activityContext, preference);
         } else {
-            setResultLauncher((AppCompatActivity) activityContext, null);
+            setResultLauncher(activityContext, null);
         }
     }
 
-    public ViewHolder getHolderAt(int groupPosition, int holderPosition) {
-        return holderList.get(groupPosition).get(holderPosition);
-    }
-
     public void onBindPreferenceList(LinearLayout linearLayout, LinkedList<Preference> preferenceList) {
-
-        holderList.add(new LinkedList<>());
 
         for (Preference preference : preferenceList) {
 
             PreferenceViewHolder holder;
             if (preference.getType().equals(Type.SEEK_BAR_TYPE)) {
-                holder = new PreferenceSeekBarViewHolder(LayoutInflater.from(mContext).inflate(R.layout.preference_list_item_preference_seekbar, linearLayout, false));
+                holder = new PreferenceSeekBarViewHolder(LayoutInflater.from(mContext).inflate(R.layout.preference_list_item_preference_seekbar, linearLayout, false), preference);
             } else if (preference.getType().equals(Type.INTENT_TYPE) || preference instanceof PreferenceGroup) {
-                holder = new PreferenceIntentViewHolder(LayoutInflater.from(mContext).inflate(R.layout.preference_list_item_preference_intent, linearLayout, false));
+                holder = new PreferenceIntentViewHolder(LayoutInflater.from(mContext).inflate(R.layout.preference_list_item_preference_intent, linearLayout, false), preference);
             } else {
-                holder = new PreferenceViewHolder(LayoutInflater.from(mContext).inflate(R.layout.preference_list_item_preference, linearLayout, false));
+                holder = new PreferenceViewHolder(LayoutInflater.from(mContext).inflate(R.layout.preference_list_item_preference, linearLayout, false), preference);
             }
 
+            mPreferenceManager.addViewHolder(holder);
             linearLayout.addView(holder.itemView);
-            holderList.getLast().add(holder);
 
-            holder.setParentIndex(holderList.size() - 1);
-            holder.setChildIndex(holderList.getLast().size() - 1);
 
             //데이터 출력
             initDataView(holder, preference);
@@ -255,7 +248,7 @@ public class PreferenceListWrapper {
             holder.setSwitch(preference.getSwitch().isChecked());
             mPreferenceManager.savePreferenceSwitchValue(preference);
         } else if (preference.getSubPreferenceList().size() > 0) {
-            startPreferenceActivity(holder, preference);
+            startPreferenceActivity(preference);
         }
     }
 
@@ -306,7 +299,7 @@ public class PreferenceListWrapper {
 
     private void radioTypedPreferenceClickEvent(PreferenceViewHolder holder, Preference preference) {
         if (preference.getRadio().isValid()) {
-            startPreferenceActivity(holder, preference);
+            startPreferenceActivity(preference);
         }
     }
 
@@ -347,13 +340,11 @@ public class PreferenceListWrapper {
         return true;
     }
 
-    private void startPreferenceActivity(ViewHolder holder, Preference preference) {
+    private void startPreferenceActivity(Preference preference) {
         Intent preferenceIntent = new Intent(mContext, PreferenceActivity.class);
         preferenceIntent.putExtra(INTENT_KEY_ROOT_PREFERENCE_ID, preference.getId());
 
         if (mContext instanceof AppCompatActivity) {
-            preferenceIntent.putExtra("parentIndex", holder.getParentIndex());
-            preferenceIntent.putExtra("childIndex", holder.getChildIndex());
             mPreferenceLauncher.launch(preferenceIntent);
         } else {
             mContext.startActivity(preferenceIntent);
@@ -363,14 +354,8 @@ public class PreferenceListWrapper {
     public void onBindRadioGroup(Preference preference, LinearLayout linearLayout, PreferenceRadioGroup radioGroup, @NonNull PreferenceRadioGroup.RadioCheckedChangedListener radioCheckedChangedListener) {
         String savedValue = preference.getContentValue();
 
-        holderList.add(new LinkedList<>());
-
         for (Map.Entry<String, Preference.Radio.RadioInfo> entry : preference.getRadio().getRadioMap().entrySet()) {
             RadioViewHolder holder = new RadioViewHolder(LayoutInflater.from(mContext).inflate(R.layout.preference_list_item_radio, linearLayout, false));
-            holderList.getLast().add(holder);
-
-            holder.setParentIndex(holderList.size() - 1);
-            holder.setChildIndex(holderList.getLast().size() - 1);
 
             Preference.Radio.RadioInfo radioInfo = entry.getValue();
 
@@ -398,15 +383,8 @@ public class PreferenceListWrapper {
         mPreferenceLauncher = activity.registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                 result -> {
                     if (result.getResultCode() == activity.RESULT_OK) {
-                        int parentIndex = result.getData().getIntExtra("parentIndex", -1);
-                        int childIndex = result.getData().getIntExtra("childIndex", -1);
-
-                        if (parentIndex != -1 && childIndex != -1) {
-                            if (mContext instanceof PreferenceActivity) {
-                                ((PreferenceViewHolder) getHolderAt(parentIndex, childIndex)).update(preference.getSubPreferenceList().get(childIndex));
-                            } else {
-                                ((PreferenceViewHolder) getHolderAt(parentIndex, childIndex)).update(mPreferenceManager.getPreferenceList().get(childIndex));
-                            }
+                        if (preference != null) {
+                            mPreferenceManager.getViewHolder(preference).update();
                         }
                     }
                 });
@@ -420,12 +398,20 @@ public class PreferenceListWrapper {
 
         private AlertDialog mTextDialog;
 
-        public PreferenceViewHolder(@NonNull View itemView) {
-            super(itemView);
+        public PreferenceViewHolder(@NonNull View itemView, Preference preference) {
+            super(itemView, preference);
 
             mContentValue = itemView.findViewById(R.id.list_item_content_value);
             mSwitch = itemView.findViewById(R.id.preference_switch);
             mDivider = itemView.findViewById(R.id.divider);
+        }
+
+        @Override
+        public void update() {
+            super.update();
+
+            setContentValue(mPreference.getContentValue(), mPreference);
+            setSwitch(mPreference.getSwitch().isChecked());
         }
 
         public void setContentValue(@NonNull String contentValue, Preference preference) {
@@ -493,8 +479,8 @@ public class PreferenceListWrapper {
         private ImageView mContentValueIcon;
         private SeekBar mContentSeekBar;
 
-        public PreferenceSeekBarViewHolder(@NonNull View itemView) {
-            super(itemView);
+        public PreferenceSeekBarViewHolder(@NonNull View itemView, Preference preference) {
+            super(itemView, preference);
 
             mContentSeekBar = itemView.findViewById(R.id.list_item_content_seekbar);
             mContentValueHolder = itemView.findViewById(R.id.list_item_content_value_holder);
@@ -576,8 +562,8 @@ public class PreferenceListWrapper {
         private ImageView mIconView;
         private FrameLayout mIconLayout;
 
-        public PreferenceIntentViewHolder(@NonNull View itemView) {
-            super(itemView);
+        public PreferenceIntentViewHolder(@NonNull View itemView, Preference preference) {
+            super(itemView, preference);
 
             mIconLayout = itemView.findViewById(R.id.preference_icon_layout);
             mIconView = itemView.findViewById(R.id.preference_icon);
@@ -604,7 +590,7 @@ public class PreferenceListWrapper {
         public void setIconTint() {
             TypedValue typedValue = new TypedValue();
 
-            TypedArray a = itemView.getContext().obtainStyledAttributes(typedValue.data, new int[] { androidx.appcompat.R.attr.colorPrimary });
+            TypedArray a = itemView.getContext().obtainStyledAttributes(typedValue.data, new int[]{androidx.appcompat.R.attr.colorPrimary});
             int color = a.getColor(0, 0);
 
             a.recycle();

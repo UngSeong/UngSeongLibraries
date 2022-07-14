@@ -5,6 +5,8 @@ import android.view.ViewGroup;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
+import com.longseong.preference.R;
+
 public class PreferenceRadioGroup {
 
     public static final int CHECKED_NULL = -1;

@@ -16,11 +16,15 @@ public class ViewHolder {
     public final TextView mTitle;
     public final TextView mDescription;
 
-    private int parentIndex;
-    private int childIndex;
+    /*package-private*/ Preference mPreference;
 
     public ViewHolder(View itemView) {
+        this(itemView, null);
+    }
+
+    public ViewHolder(View itemView, Preference preference) {
         this.itemView = itemView;
+        mPreference = preference;
 
         mTitle = itemView.findViewById(R.id.list_item_title);
         mDescription = itemView.findViewById(R.id.list_item_description);
@@ -34,6 +38,11 @@ public class ViewHolder {
         return -1;
     }
 
+    public void update() {
+        mTitle.setText(mPreference.getTitle());
+        mDescription.setText(mPreference.getDescription());
+    }
+
     public void setTitle(@NonNull String title) {
         mTitle.setText(title);
     }
@@ -45,21 +54,5 @@ public class ViewHolder {
         } else {
             mDescription.setVisibility(View.VISIBLE);
         }
-    }
-
-    public int getParentIndex() {
-        return parentIndex;
-    }
-
-    public void setParentIndex(int parentIndex) {
-        this.parentIndex = parentIndex;
-    }
-
-    public int getChildIndex() {
-        return childIndex;
-    }
-
-    public void setChildIndex(int childIndex) {
-        this.childIndex = childIndex;
     }
 }
