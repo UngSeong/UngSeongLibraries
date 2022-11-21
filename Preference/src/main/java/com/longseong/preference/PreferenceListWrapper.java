@@ -2,6 +2,7 @@ package com.longseong.preference;
 
 import static com.longseong.preference.PreferenceActivity.INTENT_KEY_ROOT_PREFERENCE_ID;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -35,10 +36,9 @@ import androidx.core.content.res.ResourcesCompat;
 
 import com.longseong.preference.Preference.Type;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
-
-import com.longseong.preference.R;
 
 public class PreferenceListWrapper {
 
@@ -46,19 +46,12 @@ public class PreferenceListWrapper {
     private final PreferenceManager mPreferenceManager;
 
     private ActivityResultLauncher<Intent> mPreferenceLauncher;
+    private final HashMap<Integer, Runnable> mPreferenceResultRunnableMap = new HashMap<>();
 
-    protected PreferenceListWrapper(AppCompatActivity activityContext) {
-        this(activityContext, null);
-    }
-
-    public PreferenceListWrapper(AppCompatActivity activityContext, @NonNull  Preference preference) {
+    public PreferenceListWrapper(AppCompatActivity activityContext) {
         mContext = activityContext;
         mPreferenceManager = PreferenceManager.getInstance(activityContext);
-        if (mContext instanceof PreferenceActivity) {
-            setResultLauncher(activityContext, preference);
-        } else {
-            setResultLauncher(activityContext, null);
-        }
+        setResultLauncher(activityContext);
     }
 
     public void onBindPreferenceList(LinearLayout linearLayout, LinkedList<Preference> preferenceList) {
@@ -185,16 +178,12 @@ public class PreferenceListWrapper {
         if (showIcon) {
             holder.replaceIcon(replaceIcon);
             holder.setIcon(holder.itemView.getContext(), preference.getIconRes());
-            holder.setContentValue(seekBarData.getProgressRaw() + "", preference);
+            holder.setContentValue(preference.getContentValueRaw() + "", preference);
             holder.setMuteUsing(seekBarData.isMutable());
             if (seekBarData.isMutable()) {
                 holder.mContentValueHolder.setOnClickListener(v -> {
                     seekBarData.toggleMute();
                     holder.setMute(seekBarData.isMuted());
-                    holder.setContentValue(seekBarData.getProgressRaw() + "", preference);
-
-                    preference.setContentValue(seekBarData.getProgressValue() + "");
-                    mPreferenceManager.savePreferenceContentValue(preference);
 
                     if (seekBarData.isMuted()) {
                         holder.mContentSeekBar.setProgress(seekBarData.getMinValue(), true);
@@ -204,6 +193,10 @@ public class PreferenceListWrapper {
                         }
                         holder.mContentSeekBar.setProgress(seekBarData.getProgressRaw(), true);
                     }
+
+                    holder.setContentValue(seekBarData.getProgressRaw() + "", preference);
+                    preference.setContentValue(seekBarData.getProgressValue() + "");
+                    mPreferenceManager.savePreferenceContentValue(preference);
                 });
             }
         }
@@ -344,10 +337,8 @@ public class PreferenceListWrapper {
         Intent preferenceIntent = new Intent(mContext, PreferenceActivity.class);
         preferenceIntent.putExtra(INTENT_KEY_ROOT_PREFERENCE_ID, preference.getId());
 
-        if (mContext instanceof AppCompatActivity) {
-            mPreferenceLauncher.launch(preferenceIntent);
-        } else {
-            mContext.startActivity(preferenceIntent);
+        if (mContext != null) {
+            launchSubPreference(preferenceIntent, preference.getId());
         }
     }
 
@@ -379,15 +370,22 @@ public class PreferenceListWrapper {
         }
     }
 
-    private void setResultLauncher(AppCompatActivity activity, Preference preference) {
+    private void setResultLauncher(AppCompatActivity activity) {
         mPreferenceLauncher = activity.registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                 result -> {
-                    if (result.getResultCode() == activity.RESULT_OK) {
-                        if (preference != null) {
-                            mPreferenceManager.getViewHolder(preference).update();
+                    if (result.getResultCode() == Activity.RESULT_OK) {
+                        int preferenceId = result.getData().getIntExtra(INTENT_KEY_ROOT_PREFERENCE_ID, ResourcesCompat.ID_NULL);
+                        Runnable runnable = mPreferenceResultRunnableMap.get(preferenceId);
+                        if (runnable != null) {
+                            runnable.run();
                         }
                     }
                 });
+    }
+
+    private void launchSubPreference(Intent intent, int preferenceId) {
+        mPreferenceLauncher.launch(intent);
+        mPreferenceResultRunnableMap.put(preferenceId, () -> mPreferenceManager.getViewHolder(preferenceId).update());
     }
 
     public static class PreferenceViewHolder extends ViewHolder {

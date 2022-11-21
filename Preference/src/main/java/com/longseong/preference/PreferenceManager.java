@@ -65,6 +65,10 @@ public class PreferenceManager {
 
     private static PreferenceManager mSingleInstance;
 
+    /**
+     * use newInstance instead
+     */
+    @Deprecated
     public static PreferenceManager getInstance(Context context, @XmlRes int xmlRes, SaveOptimizer saveOptimizer, PreferenceViewCreatedListener createdListener) {
         if (mSingleInstance == null) {
             mSingleInstance = new PreferenceManager(context, xmlRes, saveOptimizer, createdListener);
@@ -72,8 +76,27 @@ public class PreferenceManager {
         return mSingleInstance;
     }
 
+    /**
+     * use newInstance instead
+     */
+    @Deprecated
     public static PreferenceManager getInstance(Context context, @XmlRes int xmlRes, SaveOptimizer saveOptimizer) {
         return getInstance(context, xmlRes, saveOptimizer, null);
+    }
+
+    public static PreferenceManager newInstance(Context context, @XmlRes int xmlRes, SaveOptimizer saveOptimizer, PreferenceViewCreatedListener createdListener) {
+        if (mSingleInstance == null) {
+            mSingleInstance = new PreferenceManager(context, xmlRes, saveOptimizer, createdListener);
+        }
+        return mSingleInstance;
+    }
+
+    public static PreferenceManager newInstance(Context context, @XmlRes int xmlRes, SaveOptimizer saveOptimizer) {
+        return newInstance(context, xmlRes, saveOptimizer, null);
+    }
+
+    public static PreferenceManager newInstance(Context context, @XmlRes int xmlRes) {
+        return newInstance(context, xmlRes, null, null);
     }
 
     public static PreferenceManager getInstance(@NonNull Context context) {

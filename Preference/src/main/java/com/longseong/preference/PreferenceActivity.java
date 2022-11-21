@@ -93,9 +93,13 @@ public class PreferenceActivity extends AppCompatActivity {
         return mPreference;
     }
 
-    public NestedScrollView getDataScrollView() {return mDataScrollView;}
+    public NestedScrollView getDataScrollView() {
+        return mDataScrollView;
+    }
 
-    public LinearLayoutCompat getDataLayout() {return mDataLayout;}
+    public LinearLayoutCompat getDataLayout() {
+        return mDataLayout;
+    }
 
     public PreferenceListWrapper getPreferenceListWrapper() {
         return mPreferenceListWrapper;
@@ -119,7 +123,7 @@ public class PreferenceActivity extends AppCompatActivity {
 
         mPreferenceManager = PreferenceManager.getInstance(this);
         mPreference = PreferenceManager.getPreferenceMap().get(id);
-        mPreferenceListWrapper = new PreferenceListWrapper(this, mPreference);
+        mPreferenceListWrapper = new PreferenceListWrapper(this);
 
         if (mPreference == null) {
             Toast.makeText(this, "설정값을 찾을 수 없습니다.", Toast.LENGTH_SHORT).show();

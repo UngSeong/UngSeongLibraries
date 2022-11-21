@@ -5,7 +5,7 @@ githubProperties.load(new FileInputStream(rootProject.file("github.properties"))
 
 def LIB_GROUP_ID = 'com.longseong.preference'
 def LIB_ARTIFACT_ID = 'preference'
-def LIB_VERSION = '1.0.2'
+def LIB_VERSION = '1.0.4'
 
 task sourceJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
