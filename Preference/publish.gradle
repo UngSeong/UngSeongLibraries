@@ -3,9 +3,9 @@ apply plugin: 'maven-publish'
 def githubProperties = new Properties()
 githubProperties.load(new FileInputStream(rootProject.file("github.properties")))
 
-def LIB_GROUP_ID = 'com.longseong.preference'
+def LIB_GROUP_ID = 'com.ungseong.preference'
 def LIB_ARTIFACT_ID = 'preference'
-def LIB_VERSION = '1.0.4'
+def LIB_VERSION = '1.0.5'
 
 task sourceJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
@@ -15,7 +15,7 @@ publishing {
     repositories {
         maven {
             name = 'GithubPackages'
-            url "https://maven.pkg.github.com/LongSeong/LongSeongLibraries"
+            url "https://maven.pkg.github.com/UngSeong/UngSeongLibraries"
             credentials {
                 username = githubProperties['github_username'] ?: System.getenv("github_username")
                 password = githubProperties['github_access_token'] ?: System.getenv("github_access_token")

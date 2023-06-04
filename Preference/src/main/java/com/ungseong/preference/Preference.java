@@ -676,14 +676,20 @@ public class Preference {
          * mReplaceIcon : 대체 아이콘 사용 여부다.<p>
          */
 
+        public static final int TYPE_START_ACTIVITY = 0;
+        public static final int TYPE_SEND_BROADCAST = 1;
+
         private ActivityResultLauncher mLauncher;
 
         private android.content.Intent mLaunchIntent;
         private Uri mLaunchUri;
         private Activity mLauncherActivity;
 
+        private int mLauncherType;
+
         private boolean mIconUsing;
         private boolean mLauncherNotUsing;
+        private boolean mIntentLoaded;
 
         public Intent(boolean enabled, @DrawableRes int iconRes) {
             this(enabled, iconRes, null);
@@ -714,9 +720,10 @@ public class Preference {
             mLaunchUri = uri;
         }
 
-        public void notUseLauncher(@NonNull Activity activity) {
+        public void notUseLauncher(@NonNull Activity activity, int launcherType) {
             mLauncherActivity = activity;
             mLauncherNotUsing = true;
+            mLauncherType = launcherType;
         }
 
         public void setLauncher(ActivityResultLauncher launcher) {
@@ -731,7 +738,11 @@ public class Preference {
         void launch() {
 
             if (mLauncherNotUsing) {
-                mLauncherActivity.startActivity(mLaunchIntent);
+                if (mLauncherType == TYPE_START_ACTIVITY) {
+                    mLauncherActivity.startActivity(mLaunchIntent);
+                } else if (mLauncherType == TYPE_SEND_BROADCAST) {
+                    mLauncherActivity.sendBroadcast(mLaunchIntent);
+                }
             } else {
                 try {
                     mLauncher.launch(mLaunchIntent);

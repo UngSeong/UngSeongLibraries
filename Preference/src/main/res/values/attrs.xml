@@ -13,8 +13,6 @@
         <enum name="seekBarType" value="3" />
         <!-- 인텐트 형태 -->
         <enum name="intentType" value="4" />
-        <!-- 이벤트 형태 -->
-        <enum name="eventType" value="5" />
     </attr>
     <!-- 설정값 제목 -->
     <attr name="preference_title" format="string|reference" />
