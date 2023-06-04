@@ -1,11 +1,8 @@
-package com.longseong.preference;
+package com.ungseong.preference;
 
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.RadioButton;
-import android.widget.TextView;
-
-import com.longseong.preference.R;
 
 public class PreferenceRadioGroup {
 
@@ -13,12 +10,16 @@ public class PreferenceRadioGroup {
 
     private int mCheckedIndex = CHECKED_NULL;
 
-    private Preference mPreference;
-    private ViewGroup mRadioRootView;
+    private final Preference mPreference;
+    private final ViewGroup mRadioRootView;
 
     public PreferenceRadioGroup(Preference preference, ViewGroup radioRootView) {
         mPreference = preference;
         mRadioRootView = radioRootView;
+    }
+
+    public boolean check(Preference.Radio.RadioInfo radioInfo) {
+        return check(radioInfo.index);
     }
 
     public boolean check(int checkedIndex) {
@@ -41,9 +42,6 @@ public class PreferenceRadioGroup {
 
     private void setChecked(int checkedIndex) {
         mCheckedIndex = checkedIndex;
-
-        TextView title = mRadioRootView.getChildAt(checkedIndex).findViewById(R.id.list_item_title);
-        mPreference.setContentValue(title.getText().toString());
     }
 
     void setIndexOnly(int checkedIndex) {
@@ -62,6 +60,6 @@ public class PreferenceRadioGroup {
     }
 
     interface RadioCheckedChangedListener {
-        void radioCheckedChanged(PreferenceRadioGroup radioGroup, Preference preference, int checkedIndex);
+        void radioCheckedChanged(PreferenceRadioGroup radioGroup, Preference preference, Preference.Radio.RadioInfo radioInfo);
     }
 }

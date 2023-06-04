@@ -1,4 +1,4 @@
-package com.longseong.logcenter;
+package com.ungseong.logcenter;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;

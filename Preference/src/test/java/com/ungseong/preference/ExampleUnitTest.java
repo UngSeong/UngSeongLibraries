@@ -1,4 +1,4 @@
-package com.longseong.logcenter;
+package com.ungseong.preference;
 
 import org.junit.Test;
 

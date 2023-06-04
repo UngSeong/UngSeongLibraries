@@ -1,19 +1,18 @@
-package com.longseong.logcenter;
+package com.ungseong.logcenter;
 
-import static com.longseong.logcenter.util.Utils.Now;
-import static com.longseong.logcenter.util.Utils.FLAG_DATE;
-import static com.longseong.logcenter.util.Utils.FLAG_HOUR;
-import static com.longseong.logcenter.util.Utils.FLAG_MILLIS;
-import static com.longseong.logcenter.util.Utils.FLAG_MINUTE;
-import static com.longseong.logcenter.util.Utils.FLAG_MONTH;
-import static com.longseong.logcenter.util.Utils.FLAG_SECOND;
-import static com.longseong.logcenter.util.Utils.enhancedFormatDate;
+import static com.ungseong.logcenter.util.Utils.Now;
+import static com.ungseong.logcenter.util.Utils.FLAG_DATE;
+import static com.ungseong.logcenter.util.Utils.FLAG_HOUR;
+import static com.ungseong.logcenter.util.Utils.FLAG_MILLIS;
+import static com.ungseong.logcenter.util.Utils.FLAG_MINUTE;
+import static com.ungseong.logcenter.util.Utils.FLAG_MONTH;
+import static com.ungseong.logcenter.util.Utils.FLAG_SECOND;
+import static com.ungseong.logcenter.util.Utils.enhancedFormatDate;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;

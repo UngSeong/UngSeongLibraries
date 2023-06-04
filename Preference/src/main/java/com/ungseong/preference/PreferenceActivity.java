@@ -1,4 +1,4 @@
-package com.longseong.preference;
+package com.ungseong.preference;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -19,8 +19,6 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.longseong.preference.R;
 
 public class PreferenceActivity extends AppCompatActivity {
 
@@ -209,10 +207,10 @@ public class PreferenceActivity extends AppCompatActivity {
         mDataLayout.addView(itemRootView);
         mRadioGroup = new PreferenceRadioGroup(mPreference, mRadioGroupView);
 
-        mPreferenceManager.bindRadioLayout(mPreferenceListWrapper, mPreference, mRadioGroupView, mRadioGroup, (radioGroup, preference, checkedIndex) -> {
+        mPreferenceManager.bindRadioLayout(mPreferenceListWrapper, mPreference, mRadioGroupView, mRadioGroup, (radioGroup, preference, radioInfo) -> {
+            //라디오 액티비티를 종료한 후 원래 액티비티로 돌아갔을 때 라디오 선택값이 바뀌게 함
             mIntent.putExtra("contentResult", preference.getContentValue());
             setResult(RESULT_OK, mIntent);
-
         });
     }
 }

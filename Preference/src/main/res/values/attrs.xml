@@ -18,6 +18,8 @@
     </attr>
     <!-- 설정값 제목 -->
     <attr name="preference_title" format="string|reference" />
+    <!-- 설정값 기본값 -->
+    <attr name="preference_defaultValue" format="string|reference" />
     <!-- 설정값 설명 -->
     <attr name="preference_description" format="string|reference" />
     <!-- 설정값 상세 설명 -->
@@ -41,14 +43,16 @@
         <!-- 공통 -->
         <attr name="preference_type" />
         <attr name="preference_title" />
+        <attr name="preference_defaultValue" />
         <attr name="preference_description" />
         <attr name="preference_detailedDescription" />
         <attr name="preference_contentValue" />
         <attr name="preference_enabled" />
-        <attr name="preference_icon"/>
+        <attr name="preference_icon" />
 
         <!-- 스위치 -->
         <attr name="preference_switchUsage" format="boolean" />
+        <attr name="preference_switchDefaultValue" format="boolean"/>
 
         <!-- 텍스트 -->
         <!-- android:inputType 사용 -->
@@ -57,10 +61,10 @@
         <attr name="preference_radioMap" format="reference" />
 
         <!-- 시크바 -->
-        <attr name="preference_progressDefault" format="integer" />
-        <attr name="preference_progressMax" format="integer" />
-        <attr name="preference_progressMin" format="integer" />
+        <attr name="preference_maxValue" format="integer" />
+        <attr name="preference_minValue" format="integer" />
         <attr name="preference_replaceIcon" format="boolean" />
+        <attr name="preference_muteUsage" format="boolean" />
 
         <!-- 인텐트 -->
         <!-- PreferenceManager.OnPreferenceCreatedListener 사용 -->
@@ -81,4 +85,12 @@
         <attr name="description" format="string|reference" />
 
     </declare-styleable>
+
+    <attr name="activityBackground" format="color"/>
+    <attr name="preferenceTitleTextColorDisabled" format="color"/>
+    <attr name="preferenceTitleTextColorEnabled" format="color"/>
+    <attr name="preferenceContentTextColorDisabled" format="color"/>
+    <attr name="preferenceContentTextColorEnabled" format="color"/>
+    <attr name="preferenceContentValueTextColorDisabled" format="color"/>
+    <attr name="preferenceContentValueTextColorEnabled" format="color"/>
 </resources>

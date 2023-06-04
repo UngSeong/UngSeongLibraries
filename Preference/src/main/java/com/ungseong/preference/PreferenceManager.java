@@ -1,4 +1,4 @@
-package com.longseong.preference;
+package com.ungseong.preference;
 
 import android.app.Activity;
 import android.content.Context;
@@ -26,8 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import com.longseong.preference.R;
-
 public class PreferenceManager {
 
     /**
@@ -47,17 +45,19 @@ public class PreferenceManager {
     public static final String ATTRIBUTE_ACCESS_NAME = "preference_accessName";
     public static final String ATTRIBUTE_TYPE = "preference_type";
     public static final String ATTRIBUTE_TITLE = "preference_title";
+    public static final String ATTRIBUTE_DEFAULT_VALUE = "preference_defaultValue";
     public static final String ATTRIBUTE_DESCRIPTION = "preference_description";
     public static final String ATTRIBUTE_DETAILED_DESCRIPTION = "preference_detailedDescription";
     public static final String ATTRIBUTE_ENABLED = "preference_enabled";
     public static final String ATTRIBUTE_ICON = "preference_icon";
     public static final String ATTRIBUTE_SWITCH_USAGE = "preference_switchUsage";
+    public static final String ATTRIBUTE_SWITCH_DEFAULT_VALUE = "preference_switchDefaultValue";
     public static final String ATTRIBUTE_INPUT_TYPE = "inputType";
     public static final String ATTRIBUTE_RADIO_MAP = "preference_radioMap";
-    public static final String ATTRIBUTE_DEFAULT_PROGRESS = "preference_progressDefault";
-    public static final String ATTRIBUTE_MAX_PROGRESS = "preference_progressMax";
-    public static final String ATTRIBUTE_MIN_PROGRESS = "preference_progressMin";
+    public static final String ATTRIBUTE_MAX_VALUE = "preference_maxValue";
+    public static final String ATTRIBUTE_MIN_VALUE = "preference_minValue";
     public static final String ATTRIBUTE_REPLACE_ICON = "preference_replaceIcon";
+    public static final String ATTRIBUTE_MUTE_USAGE = "preference_muteUsage";
 
     public static final String SWITCH_VALUE = "_switchValue";
     public static final String CONTENT_VALUE = "_contentValue";
@@ -233,10 +233,11 @@ public class PreferenceManager {
 
                     Preference.Type type;
 
-                    int defaultProgress = 50;
+                    //SeekBar default attribute data
                     int maxProgress = 100;
                     int minProgress = 0;
                     boolean replaceIcon = true;
+                    boolean muteUsage = false;
 
                     if (builderCursor != null) {
                         builderQueue.push(builderCursor);
@@ -263,10 +264,6 @@ public class PreferenceManager {
                                 if (resId == ResourcesCompat.ID_NULL) {
                                     type = Preference.Type.valueOf(parser.getAttributeIntValue(i, Preference.Type.EXPLAIN_TYPE.getValue()));
                                     builderCursor.setType(type);
-
-                                    if (type.equals(Preference.Type.INTENT_TYPE)) {
-                                        builderCursor.setIntent();
-                                    }
                                 }
                                 break;
                             }
@@ -281,6 +278,15 @@ public class PreferenceManager {
                                     builderCursor.setTitle(parser.getAttributeValue(i));
                                 } else {
                                     builderCursor.setTitle(resources.getString(resId));
+                                }
+                                break;
+                            }
+                            case ATTRIBUTE_DEFAULT_VALUE: {
+                                if (resId == ResourcesCompat.ID_NULL) {
+                                    builderCursor.setDefaultValue(parser.getAttributeValue(i));
+                                } else {
+                                    builderCursor.setDefaultValue(resources.getString(resId));
+
                                 }
                                 break;
                             }
@@ -316,6 +322,14 @@ public class PreferenceManager {
                                 }
                                 break;
                             }
+                            case ATTRIBUTE_SWITCH_DEFAULT_VALUE: {
+                                if (resId == ResourcesCompat.ID_NULL) {
+                                    builderCursor.setSwitchDefaultValue(parser.getAttributeBooleanValue(i, true));
+                                } else {
+                                    builderCursor.setSwitchDefaultValue(resources.getBoolean(resId));
+                                }
+                                break;
+                            }
                             case ATTRIBUTE_INPUT_TYPE: {
                                 builderCursor.setInputType(parser.getAttributeIntValue(i, EditorInfo.TYPE_CLASS_TEXT));
                                 break;
@@ -324,7 +338,7 @@ public class PreferenceManager {
                                 builderCursor.setRadio(resId);
                                 break;
                             }
-                            case ATTRIBUTE_MAX_PROGRESS: {
+                            case ATTRIBUTE_MAX_VALUE: {
                                 if (resId == ResourcesCompat.ID_NULL) {
                                     maxProgress = parser.getAttributeIntValue(i, 100);
                                 } else {
@@ -332,19 +346,11 @@ public class PreferenceManager {
                                 }
                                 break;
                             }
-                            case ATTRIBUTE_MIN_PROGRESS: {
+                            case ATTRIBUTE_MIN_VALUE: {
                                 if (resId == ResourcesCompat.ID_NULL) {
                                     minProgress = parser.getAttributeIntValue(i, 0);
                                 } else {
                                     minProgress = resources.getInteger(resId);
-                                }
-                                break;
-                            }
-                            case ATTRIBUTE_DEFAULT_PROGRESS: {
-                                if (resId == ResourcesCompat.ID_NULL) {
-                                    defaultProgress = parser.getAttributeIntValue(i, 50);
-                                } else {
-                                    defaultProgress = resources.getInteger(resId);
                                 }
                                 break;
                             }
@@ -356,11 +362,18 @@ public class PreferenceManager {
                                 }
                                 break;
                             }
+                            case ATTRIBUTE_MUTE_USAGE: {
+                                if (resId == ResourcesCompat.ID_NULL) {
+                                    muteUsage = parser.getAttributeBooleanValue(i, false);
+                                } else {
+                                    muteUsage = resources.getBoolean(resId);
+                                }
+                                break;
+                            }
                         }
                     }
 
-                    builderCursor.setSeekBar(defaultProgress, maxProgress, minProgress, replaceIcon);
-                    builderCursor.setIntent();
+                    builderCursor.setSeekBar(maxProgress, minProgress, replaceIcon, muteUsage);
 
                 } else if (eventType == XmlResourceParser.END_TAG) {
 
@@ -459,108 +472,85 @@ public class PreferenceManager {
     }
 
     public void loadPreference(Preference preference) {
-        boolean switchValue;
-        String contentValue;
-        String contentValueRaw;
+        String[] contentValues = new String[]{loadPreferenceContentValue(preference), loadPreferenceContentValueRaw(preference)};
+        boolean dataChanged;
 
-        switchValue = loadPreferenceSwitchValue(preference);
-        contentValue = loadPreferenceContentValue(preference);
-        contentValueRaw = loadPreferenceContentValueRaw(preference);
+        preference.getSwitch().setChecked(loadPreferenceSwitchValue(preference));
+        dataChanged = setPreferenceContentValuesCorrectWrongData(preference, contentValues);
 
-        preference.getSwitch().setChecked(loadPreferenceSwitchValueInvalidateWrongData(preference));
-        preference.setContentValue(loadPreferenceContentValueInvalidateWrongData(preference));
-        preference.setContentValueRaw(loadPreferenceContentValueRawInvalidateWrongData(preference));
-
-        //저장된 데이터가 없거나 현재 데이터와 다르면 다시 저장
-        if (!mSharedPreferences.contains(preference.getAccessName() + SWITCH_VALUE) || switchValue != preference.getSwitch().isChecked()) {
-            savePreferenceSwitchValue(preference);
-        }
-        if (!mSharedPreferences.contains(preference.getAccessName() + CONTENT_VALUE) || !contentValue.equals(preference.getContentValue())) {
+        //저장되어 있는 데이터가 설정값 타입의 형식에 맞지 않게 저장되었다면 형식화된 값을 새롭게 저장함
+        if (dataChanged) {
             savePreferenceContentValue(preference);
-        }
-        if (!mSharedPreferences.contains(preference.getAccessName() + CONTENT_VALUE_RAW) || contentValueRaw.equals(preference.getContentValueRaw())) {
             savePreferenceContentValueRaw(preference);
         }
     }
 
-    private boolean loadPreferenceSwitchValueInvalidateWrongData(Preference preference) {
-        boolean switchChecked = loadPreferenceSwitchValue(preference);
-
-        if (preference.getSwitch().isValid()) {
-            preference.getSwitch().setChecked(switchChecked);
-        }
-
-        return switchChecked;
-    }
-
-    private String loadPreferenceContentValueInvalidateWrongData(Preference preference) {
-        String contentValue = loadPreferenceContentValue(preference);
-
-        //contentValue가 유효하지 않다면 기본값으로 첫 번째 라디오 값 선택
+    private boolean setPreferenceContentValuesCorrectWrongData(Preference preference, String[] contentValues) {
+        //contentValueRaw가 유효하지 않다면 기본값으로 첫 번째 라디오 값 선택
         if (preference.getRadio().isValid()) {
             Preference.Radio radio = preference.getRadio();
-            if (!contentValue.equals("")) {
+            if (!contentValues[1].isEmpty()) {
                 for (Map.Entry<String, Preference.Radio.RadioInfo> entry : radio.getRadioMap().entrySet()) {
-                    if (contentValue.equals(entry.getValue().title)) {
-                        return contentValue;
+                    if (contentValues[1].equals(entry.getValue().key)) {
+                        //라디오와 시크바는 공존할 수 없으며 라디오 체크후 문제 없으므로 false return
+                        preference.setContentValue(entry.getValue().title);
+                        return false;
                     }
                 }
             }
-            contentValue = radio.getRadioMap().entrySet().iterator().next().getValue().title;
+            Preference.Radio.RadioInfo radioInfo = radio.getRadioMap().entrySet().iterator().next().getValue();
+            preference.setContentValueRaw(radioInfo.key);
+            preference.setContentValue(radioInfo.title);
+            //라디오와 시크바는 공존할 수 없으며 라디오 체크후 문제가 있으므로 true return
+            return true;
         }
 
         if (preference.getSeekBar().isValid()) {
+            boolean correctionEmergence = false;
             Preference.SeekBar seekBar = preference.getSeekBar();
+
             try {
-                seekBar.setProgress(Integer.parseInt(contentValue));
+                seekBar.setProgress(Integer.parseInt(contentValues[0]));
+                seekBar.setProgressRaw(Integer.parseInt(contentValues[1]));
             } catch (NumberFormatException e) {
-                seekBar.resetProgressToDefault();
+                seekBar.resetToDefault();
+                correctionEmergence = true;
             }
-            if (seekBar.getProgressValue() == 0) {
+            preference.setContentValueRaw(seekBar.getProgressRaw() + "");
+            preference.setContentValue(seekBar.getProgressValue() + "");
+
+            if (seekBar.getProgressValue() == seekBar.getMinValue() && seekBar.isMuteUsed()) {
                 seekBar.setMute(true);
             }
+            return correctionEmergence;
         }
 
-        return contentValue;
-    }
-
-    private String loadPreferenceContentValueRawInvalidateWrongData(Preference preference) {
-        String contentValueRaw = loadPreferenceContentValueRaw(preference);
-
-        if (preference.getSeekBar().isValid()) {
-            Preference.SeekBar seekBar = preference.getSeekBar();
-            try {
-                seekBar.setProgressRaw(Integer.parseInt(contentValueRaw));
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return contentValueRaw;
+        //아무 문제 없으므로 false return
+        return false;
     }
 
     public boolean loadPreferenceSwitchValue(Preference preference) {
-        return loadPreferenceSwitchValue(preference.getAccessName());
+        return loadPreferenceSwitchValue(preference.getAccessName(), preference.getSwitch().getDefaultValue());
     }
 
-    public boolean loadPreferenceSwitchValue(String PreferenceAccessName) {
-        return mSharedPreferences.getBoolean(PreferenceAccessName + SWITCH_VALUE, false);
+    protected boolean loadPreferenceSwitchValue(String PreferenceAccessName, boolean switchDefaultValue) {
+        return mSharedPreferences.getBoolean(PreferenceAccessName + SWITCH_VALUE, switchDefaultValue);
     }
 
     public String loadPreferenceContentValue(Preference preference) {
-        return loadPreferenceContentValue(preference.getAccessName());
+        return loadPreferenceContentValue(preference.getAccessName(), preference.getDefaultValue());
     }
 
-    public String loadPreferenceContentValue(String PreferenceAccessName) {
-        return mSharedPreferences.getString(PreferenceAccessName + CONTENT_VALUE, "");
+    protected String loadPreferenceContentValue(String PreferenceAccessName, String defaultValue) {
+        return mSharedPreferences.getString(PreferenceAccessName + CONTENT_VALUE, defaultValue);
     }
 
     public String loadPreferenceContentValueRaw(Preference preference) {
-        return loadPreferenceContentValueRaw(preference.getAccessName());
+        return loadPreferenceContentValueRaw(preference.getAccessName(), preference.getDefaultValue());
     }
 
-    public String loadPreferenceContentValueRaw(String PreferenceAccessName) {
-        return mSharedPreferences.getString(PreferenceAccessName + CONTENT_VALUE_RAW, "");
+    protected String loadPreferenceContentValueRaw(String PreferenceAccessName, String defaultValue) {
+        return mSharedPreferences.getString(PreferenceAccessName + CONTENT_VALUE_RAW, defaultValue);
     }
 
     public void registerPreferenceLayout(AppCompatActivity activityContext, NestedScrollView preferenceLayout) {

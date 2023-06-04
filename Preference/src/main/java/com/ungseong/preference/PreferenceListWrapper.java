@@ -1,6 +1,6 @@
-package com.longseong.preference;
+package com.ungseong.preference;
 
-import static com.longseong.preference.PreferenceActivity.INTENT_KEY_ROOT_PREFERENCE_ID;
+import static com.ungseong.preference.PreferenceActivity.INTENT_KEY_ROOT_PREFERENCE_ID;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -34,7 +34,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.res.ResourcesCompat;
 
-import com.longseong.preference.Preference.Type;
+import com.ungseong.preference.Preference.Type;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -91,9 +91,6 @@ public class PreferenceListWrapper {
                 } else if (preference.getType().equals(Type.INTENT_TYPE)) {
                     //intent 타입의 설정값 클릭시 이벤트
                     intentTypedPreferenceClickEvent(holder, preference);
-                } else if (preference.getType().equals(Type.EVENT_TYPE)) {
-                    //intent 타입의 설정값 클릭시 이벤트
-                    eventTypedPreferenceClickEvent(holder, preference);
                 }
             });
 
@@ -108,9 +105,6 @@ public class PreferenceListWrapper {
                 } else if (preference.getType().equals(Type.INTENT_TYPE)) {
                     //intent 타입의 설정값 클릭시 이벤트
                     return intentTypedPreferenceLongClickEvent(holder, preference);
-                } else if (preference.getType().equals(Type.EVENT_TYPE)) {
-                    //event 타입의 설정값 클릭시 이벤트
-                    return eventTypedPreferenceLongClickEvent(holder, preference);
                 }
                 return false;
             });
@@ -128,7 +122,7 @@ public class PreferenceListWrapper {
     private void initDataView(PreferenceViewHolder holder, Preference preference) {
         holder.setTitle(preference.getTitle());
         holder.setDescription(preference.getDescription());
-        holder.setContentValue(preference.getContentValue(), preference);
+        holder.setContentValue(preference);
     }
 
     private void initIndividualLayout(Preference preference, PreferenceViewHolder holder) {
@@ -152,7 +146,7 @@ public class PreferenceListWrapper {
             preference.getSwitch().setChecked(isChecked);
             mPreferenceManager.savePreferenceSwitchValue(preference);
             //contentValue의 가시도 설정
-            holder.setContentValue(preference.getContentValue(), preference);
+            holder.setContentValue(preference);
         });
 
         holder.showDivider(dividerEnabled);
@@ -178,9 +172,9 @@ public class PreferenceListWrapper {
         if (showIcon) {
             holder.replaceIcon(replaceIcon);
             holder.setIcon(holder.itemView.getContext(), preference.getIconRes());
-            holder.setContentValue(preference.getContentValueRaw() + "", preference);
-            holder.setMuteUsing(seekBarData.isMutable());
-            if (seekBarData.isMutable()) {
+            holder.setContentValue(seekBarData.getProgressRaw() + "", preference);
+            holder.setMuteUsing(seekBarData.isMuteUsed());
+            if (seekBarData.isMuteUsed()) {
                 holder.mContentValueHolder.setOnClickListener(v -> {
                     seekBarData.toggleMute();
                     holder.setMute(seekBarData.isMuted());
@@ -189,7 +183,7 @@ public class PreferenceListWrapper {
                         holder.mContentSeekBar.setProgress(seekBarData.getMinValue(), true);
                     } else {
                         if (seekBarData.getProgressRaw() == min) {
-                            seekBarData.resetProgressToDefault();
+                            seekBarData.setProgress(seekBarData.getDefaultValue());
                         }
                         holder.mContentSeekBar.setProgress(seekBarData.getProgressRaw(), true);
                     }
@@ -204,16 +198,22 @@ public class PreferenceListWrapper {
             @Override
             public void onProgressChanged(SeekBar seekbar, int progress, boolean fromUser) {
                 if (fromUser) {
-                    holder.setContentValue(progress + "", preference);
+                    preference.setContentValue(progress + "");
+                    holder.setContentValue(preference);
 
                     holder.setMute(progress == 0);
                     seekBarData.setMute(progress == 0);
+                }
+                if (seekBarData.seekBarListener != null) {
+                    seekBarData.seekBarListener.onProgressChange();
                 }
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-
+                if (seekBarData.seekBarListener != null) {
+                    seekBarData.seekBarListener.onStartChange();
+                }
             }
 
             @Override
@@ -224,6 +224,10 @@ public class PreferenceListWrapper {
                 mPreferenceManager.savePreferenceContentValue(preference);
                 preference.setContentValueRaw(seekBarData.getProgressRaw() + "");
                 mPreferenceManager.savePreferenceContentValueRaw(preference);
+
+                if (seekBarData.seekBarListener != null) {
+                    seekBarData.seekBarListener.onStopChange();
+                }
             }
         });
     }
@@ -239,7 +243,6 @@ public class PreferenceListWrapper {
         if (preference.getSwitch().isValid() && preference.getSubPreferenceList().isEmpty()) {
             preference.getSwitch().toggle();
             holder.setSwitch(preference.getSwitch().isChecked());
-            mPreferenceManager.savePreferenceSwitchValue(preference);
         } else if (preference.getSubPreferenceList().size() > 0) {
             startPreferenceActivity(preference);
         }
@@ -269,7 +272,7 @@ public class PreferenceListWrapper {
         dialogTitle.setText(preference.getTitle());
         dialogDescription.setText(preference.getDetailedDescription());
         dialogInput.setText(preference.getContentValue());
-        dialogInput.setInputType(preference.getInputType());
+        dialogInput.setInputType(preference.getInput().getInputType());
         dialogInput.requestFocus();
 
         dialogCancel.setOnClickListener(v1 -> holder.mTextDialog.dismiss());
@@ -277,7 +280,7 @@ public class PreferenceListWrapper {
             preference.setContentValue(dialogInput.getText().toString());
             mPreferenceManager.savePreferenceContentValue(preference);
 
-            holder.setContentValue(preference.getContentValue(), preference);
+            holder.setContentValue(preference);
             holder.mTextDialog.dismiss();
         });
 
@@ -297,7 +300,7 @@ public class PreferenceListWrapper {
     }
 
     private boolean seekBarTypedPreferenceLongClickEvent(PreferenceViewHolder holder, Preference preference) {
-        Toast.makeText(mContext, preference.getDetailedDescription(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(mContext, ((PreferenceSeekBarViewHolder) holder).mContentSeekBar.toString(), Toast.LENGTH_SHORT).show();
         return true;
     }
 
@@ -305,13 +308,7 @@ public class PreferenceListWrapper {
         if (preference.getIntent().isLaunchable()) {
             preference.getIntent().launch();
         } else {
-            Toast.makeText(mContext, "인텐트 지정되지 않았습니다.", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void eventTypedPreferenceClickEvent(PreferenceViewHolder holder, Preference preference) {
-        if (preference.getEvent().isValid()) {
-            preference.getEvent().startEvent(preference);
+            Toast.makeText(mContext, "인텐트가 지정되지 않았습니다.", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -328,11 +325,6 @@ public class PreferenceListWrapper {
         return true;
     }
 
-    private boolean eventTypedPreferenceLongClickEvent(PreferenceViewHolder holder, Preference preference) {
-        Toast.makeText(mContext, preference.getDetailedDescription(), Toast.LENGTH_SHORT).show();
-        return true;
-    }
-
     private void startPreferenceActivity(Preference preference) {
         Intent preferenceIntent = new Intent(mContext, PreferenceActivity.class);
         preferenceIntent.putExtra(INTENT_KEY_ROOT_PREFERENCE_ID, preference.getId());
@@ -343,7 +335,7 @@ public class PreferenceListWrapper {
     }
 
     public void onBindRadioGroup(Preference preference, LinearLayout linearLayout, PreferenceRadioGroup radioGroup, @NonNull PreferenceRadioGroup.RadioCheckedChangedListener radioCheckedChangedListener) {
-        String savedValue = preference.getContentValue();
+        String savedKey = preference.getContentValueRaw();
 
         for (Map.Entry<String, Preference.Radio.RadioInfo> entry : preference.getRadio().getRadioMap().entrySet()) {
             RadioViewHolder holder = new RadioViewHolder(LayoutInflater.from(mContext).inflate(R.layout.preference_list_item_radio, linearLayout, false));
@@ -355,16 +347,19 @@ public class PreferenceListWrapper {
 
             linearLayout.addView(holder.itemView);
 
-            if (radioInfo.title.equals(savedValue)) {
+            if (radioInfo.key.equals(savedKey)) {
                 holder.mRadioButton.setChecked(true);
                 radioGroup.setIndexOnly(linearLayout.indexOfChild(holder.itemView));
             }
 
             holder.itemView.setOnClickListener(v -> {
-                boolean changed = radioGroup.check(linearLayout.indexOfChild(v));
+                boolean changed = radioGroup.check(radioInfo);
                 if (changed) {
+                    preference.setContentValueRaw(radioInfo.key);
+                    preference.setContentValue(radioInfo.title);
                     mPreferenceManager.savePreferenceContentValue(preference);
-                    radioCheckedChangedListener.radioCheckedChanged(radioGroup, preference, linearLayout.indexOfChild(v));
+
+                    radioCheckedChangedListener.radioCheckedChanged(radioGroup, preference, radioInfo);
                 }
             });
         }
@@ -408,8 +403,12 @@ public class PreferenceListWrapper {
         public void update() {
             super.update();
 
-            setContentValue(mPreference.getContentValue(), mPreference);
+            setContentValue(mPreference);
             setSwitch(mPreference.getSwitch().isChecked());
+        }
+
+        public final void setContentValue(Preference preference) {
+            setContentValue(preference.getContentValue(), preference);
         }
 
         public void setContentValue(@NonNull String contentValue, Preference preference) {
@@ -443,7 +442,7 @@ public class PreferenceListWrapper {
 
         public void update(Preference preference) {
             setTitle(preference.getTitle());
-            setContentValue(preference.getContentValue(), preference);
+            setContentValue(preference);
             setDescription(preference.getDescription());
             setSwitch(preference.getSwitch().isChecked());
         }
@@ -459,6 +458,10 @@ public class PreferenceListWrapper {
 
             mContentValue = itemView.findViewById(R.id.list_item_content_value);
             mRadioButton = itemView.findViewById(R.id.radio);
+        }
+
+        public void setContentValue(Preference preference) {
+            setContentValue(preference.getContentValue(), preference);
         }
 
         public void setContentValue(@NonNull String contentValue, Preference preference) {

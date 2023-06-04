@@ -1,10 +1,11 @@
-package com.longseong.preference;
+package com.ungseong.preference;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.XmlResourceParser;
 import android.net.Uri;
-import android.os.Handler;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.inputmethod.EditorInfo;
 
@@ -22,8 +23,6 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.Objects;
-
-import com.longseong.preference.R;
 
 public class Preference {
     /**
@@ -53,70 +52,87 @@ public class Preference {
     @NonNull
     private final Type mType;
     @DrawableRes
-    private int mIconRes;
+    private final int mIconRes;
 
     //설정값 데이터
     private String mTitle;
     private String mDescription;
     private String mDetailedDescription;
     private boolean mEnabled;
+    private String mDefaultValue;
     private String mContentValue;
     private String mContentValueRaw;
 
     //선택적 개별 데이터
     private Switch mSwitch;
-    private Text mText;
+    private Input mInput;
     private Radio mRadio;
     private SeekBar mSeekBar;
     private Intent mIntent;
-    private Event mEvent;
     private LinkedList<Preference> mSubPreferenceList;
 
-    public Preference(int id, @NonNull String accessName, @NonNull Type type, @DrawableRes int iconRes, String title, String description, String detailedDescription, boolean enabled) {
-        mId = id;
-        mAccessName = accessName;
-        mType = type;
-        mIconRes = iconRes;
+    public Preference(Bundle bundle) {
 
-        initData(title, description, detailedDescription, enabled);
+        mId = bundle.getInt(Builder.KEY_ID);
+        mAccessName = bundle.getString(Builder.KEY_ACCESS_NAME);
+        mType = Type.valueOf(bundle.getInt(Builder.KEY_TYPE));
+        mIconRes = bundle.getInt(Builder.KEY_ICON_RES);
+
+        initData(bundle);
     }
 
-    private void initData(String title, String description, String detailedContent, boolean enabled) {
-        mTitle = title;
-        mDescription = description;
-        mDetailedDescription = detailedContent;
-        mEnabled = enabled;
-        mContentValue = "";
-
+    private void initData(Bundle bundle) {
+        mTitle = bundle.getString(Builder.KEY_TITLE);
+        mDescription = bundle.getString(Builder.KEY_DESCRIPTION);
+        mDetailedDescription = bundle.getString(Builder.KEY_DETAILED_DESCRIPTION);
+        mEnabled = bundle.getBoolean(Builder.KEY_ENABLED);
+        mDefaultValue = bundle.getString(Builder.KEY_DEFAULT_VALUE);
     }
 
     protected void initSubPreferenceList(LinkedList<Preference> subPreferenceList) {
         mSubPreferenceList = subPreferenceList;
     }
 
-    protected void initSwitch(boolean switchUsage) {
-        mSwitch = new Switch(switchUsage);
+    protected void initSwitch(Bundle bundle) {
+        boolean switchUsage = bundle.getBoolean(Builder.KEY_SWITCH_USAGE) && Type.valueOf(bundle.getInt(Builder.KEY_TYPE)).switchAvailable();
+        boolean switchDefaultValue = bundle.getBoolean(Builder.KEY_SWITCH_DEFAULT_VALUE);
+        mSwitch = new Switch(switchUsage, switchDefaultValue);
     }
 
-    protected void initInputType(int inputType) {
-        mText = new Text(mType.equals(Type.TEXT_TYPE));
-        mText.setInputType(inputType);
+    protected void initText(Bundle bundle) {
+        boolean textUsage = mType.equals(Type.TEXT_TYPE);
+        int inputType = bundle.getInt(Builder.KEY_INPUT_TYPE);
+        mInput = new Input(textUsage, inputType);
+
     }
 
-    protected void initRadio(boolean enabled, Context context, @XmlRes int xmlResource) {
-        mRadio = new Radio(enabled, context, xmlResource);
+    protected void initRadio(Bundle bundle, Context context) {
+        boolean enabled = false;
+        LinkedHashMap<String, Radio.RadioInfo> radioMap = null;
+        @XmlRes int xmlResource = bundle.getInt(Builder.KEY_RADIO_XML_RESOURCE);
+        if (xmlResource != ResourcesCompat.ID_NULL) {
+            try {
+                radioMap = Radio.parseXmlMap(context, xmlResource);
+                enabled = true;
+            } catch (XmlPullParserException | IOException ignored) {
+            }
+        }
+        mRadio = new Radio(enabled, radioMap);
     }
 
-    protected void initSeekBar(boolean enabled, int defaultValue, int max, int min, boolean replaceIcon) {
-        mSeekBar = new SeekBar(mIconRes, enabled, defaultValue, max, min, replaceIcon);
+    protected void initSeekBar(Bundle bundle) {
+        boolean enabled = Type.SEEK_BAR_TYPE.equals(Type.valueOf(bundle.getInt(Builder.KEY_TYPE)));
+        int max = bundle.getInt(Builder.KEY_SEEKBAR_MAX);
+        int min = bundle.getInt(Builder.KEY_SEEKBAR_MIN);
+        boolean replaceIcon = bundle.getBoolean(Builder.KEY_SEEKBAR_REPLACE_ICON);
+        boolean muteUsage = bundle.getBoolean(Builder.KEY_SEEKBAR_MUTE_USAGE);
+
+        mSeekBar = new SeekBar(mIconRes, enabled, mDefaultValue, max, min, replaceIcon, muteUsage);
     }
 
-    protected void initIntent(boolean enabled) {
+    protected void initIntent(Bundle bundle) {
+        boolean enabled = Type.INTENT_TYPE.equals(Type.valueOf(bundle.getInt(Builder.KEY_TYPE)));
         mIntent = new Intent(enabled, mIconRes);
-    }
-
-    protected void initEvent(boolean enabled) {
-        mEvent = new Event(enabled);
     }
 
     public int getId() {
@@ -160,18 +176,30 @@ public class Preference {
     }
 
     public String getContentValue() {
+        if (mContentValue == null) {
+            mContentValue = mDefaultValue;
+        }
         return mContentValue;
     }
 
     public void setContentValue(String contentValue) {
+        if (contentValue == null) {
+            contentValue = mDefaultValue;
+        }
         this.mContentValue = contentValue;
     }
 
     public String getContentValueRaw() {
+        if (mContentValueRaw == null) {
+            mContentValueRaw = mDefaultValue;
+        }
         return mContentValueRaw;
     }
 
     public void setContentValueRaw(String contentValueRaw) {
+        if (contentValueRaw == null) {
+            contentValueRaw = mDefaultValue;
+        }
         this.mContentValueRaw = contentValueRaw;
     }
 
@@ -183,6 +211,10 @@ public class Preference {
         mEnabled = enabled;
     }
 
+    public String getDefaultValue() {
+        return mDefaultValue;
+    }
+
     public LinkedList<Preference> getSubPreferenceList() {
         return mSubPreferenceList;
     }
@@ -191,8 +223,8 @@ public class Preference {
         return mSwitch;
     }
 
-    public int getInputType() {
-        return mText.mInputType;
+    public Input getInput() {
+        return mInput;
     }
 
     public Radio getRadio() {
@@ -205,10 +237,6 @@ public class Preference {
 
     public Intent getIntent() {
         return mIntent;
-    }
-
-    public Event getEvent() {
-        return mEvent;
     }
 
     protected void setSubPreferencesEnabled(boolean enabled) {
@@ -234,8 +262,7 @@ public class Preference {
         TEXT_TYPE(1),
         RADIO_TYPE(2),
         SEEK_BAR_TYPE(3),
-        INTENT_TYPE(4),
-        EVENT_TYPE(5);
+        INTENT_TYPE(4);
 
         static public Type valueOf(int value) {
             if (value == EXPLAIN_TYPE.value) {
@@ -248,8 +275,6 @@ public class Preference {
                 return SEEK_BAR_TYPE;
             } else if (value == INTENT_TYPE.value) {
                 return INTENT_TYPE;
-            } else if (value == EVENT_TYPE.value) {
-                return EVENT_TYPE;
             } else {
                 return EXPLAIN_TYPE;
             }
@@ -266,16 +291,12 @@ public class Preference {
         }
 
         public boolean switchAvailable() {
-            return !(equals(SEEK_BAR_TYPE) || equals(INTENT_TYPE) || equals(EVENT_TYPE));
+            return !(equals(SEEK_BAR_TYPE) || equals(INTENT_TYPE));
         }
-
-        /*public boolean intentAvailable() {
-            return !(equals(SEEK_BAR_TYPE) || equals(TEXT_TYPE) || equals(EVENT_TYPE));
-        }*/
 
     }
 
-    public abstract static class Basic {
+    public static class PreferenceComponent {
 
         /**
          * 설정값의 특성을 정의하기 위한 기본 클래스이다.<p>
@@ -285,7 +306,7 @@ public class Preference {
 
         final boolean mEnabled;
 
-        protected Basic(boolean enabled) {
+        protected PreferenceComponent(boolean enabled) {
             mEnabled = enabled;
         }
 
@@ -295,7 +316,7 @@ public class Preference {
 
     }
 
-    public static class Switch extends Basic {
+    public static class Switch extends PreferenceComponent {
 
         /**
          * 설정값 우측의 스위치버튼의 데이터를 담는 클래스이다.<p>
@@ -303,10 +324,16 @@ public class Preference {
          * mChecked : 스위치의 on/off 여부이다.<p>
          */
 
+        private boolean mDefaultCheckedValue;
         private boolean mChecked;
 
         public Switch(boolean enabled) {
             super(enabled);
+        }
+
+        public Switch(boolean enabled, boolean mChecked) {
+            super(enabled);
+            this.mDefaultCheckedValue = mChecked;
         }
 
         public boolean isChecked() {
@@ -320,9 +347,13 @@ public class Preference {
         public void toggle() {
             mChecked = !mChecked;
         }
+
+        public boolean getDefaultValue() {
+            return mDefaultCheckedValue;
+        }
     }
 
-    public static class Text extends Basic {
+    public static class Input extends PreferenceComponent {
 
         /**
          * 설정값의 텍스트 다이얼로그의 특성을 담는 클래스이다.<p>
@@ -332,8 +363,10 @@ public class Preference {
         private AlertDialog mDialog;
         private int mInputType;
 
-        protected Text(boolean enabled) {
+        protected Input(boolean enabled, int inputType) {
             super(enabled);
+            if (!enabled) return;
+            mInputType = inputType;
         }
 
         @Override
@@ -354,7 +387,7 @@ public class Preference {
         }
     }
 
-    public static class Radio extends Basic {
+    public static class Radio extends PreferenceComponent {
 
         /**
          * 설정값의 라디오버튼의 데이터를 담는 클래스이다.
@@ -365,11 +398,10 @@ public class Preference {
 
         private LinkedHashMap<String, RadioInfo> mRadioMap;
 
-        public Radio(boolean enabled, @NonNull Context context, @XmlRes int xmlResource) {
+        public Radio(boolean enabled, LinkedHashMap<String, RadioInfo> radioMap) {
             super(enabled);
-            if (xmlResource != ResourcesCompat.ID_NULL) {
-                mRadioMap = parseXmlMap(context, xmlResource);
-            }
+            if (!enabled) return;
+            mRadioMap = radioMap;
         }
 
         @Override
@@ -385,7 +417,7 @@ public class Preference {
             mRadioMap = radioMap;
         }
 
-        protected LinkedHashMap<String, RadioInfo> parseXmlMap(Context context, @XmlRes int xmlResource) {
+        protected static LinkedHashMap<String, RadioInfo> parseXmlMap(Context context, @XmlRes int xmlResource) throws XmlPullParserException, IOException {
             LinkedHashMap<String, RadioInfo> map = new LinkedHashMap<>();
             XmlResourceParser parser = context.getResources().getXml(xmlResource);
 
@@ -393,49 +425,48 @@ public class Preference {
             String resValue, key = null, title = null, description = null;
             String[] resAttributes = {"key", "title", "description"};
 
-            try {
-                int eventType = parser.getEventType();
+            int eventType = parser.getEventType();
+            int radioInfoIndex = 0;
 
-                while (eventType != XmlPullParser.END_DOCUMENT) {
-                    if (eventType == XmlPullParser.START_DOCUMENT) {
-                        Log.d("utils", "Start document");
-                    } else if (eventType == XmlPullParser.START_TAG) {
+            while (eventType != XmlPullParser.END_DOCUMENT) {
+                if (eventType == XmlPullParser.START_DOCUMENT) {
+                    Log.d("utils", "Start document");
+                } else if (eventType == XmlPullParser.START_TAG) {
 
-                        if (parser.getName().equals("entry")) {
-                            for (String attr : resAttributes) {
-                                resId = parser.getAttributeResourceValue(PreferenceManager.XML_NAMESPACE, attr, ResourcesCompat.ID_NULL);
-                                if (resId == ResourcesCompat.ID_NULL) {
-                                    resValue = parser.getAttributeValue(PreferenceManager.XML_NAMESPACE, attr);
-                                } else {
-                                    resValue = context.getString(resId);
-                                }
-                                if (attr.equals("key")) {
-                                    key = resValue;
-                                } else if (attr.equals("title")) {
-                                    title = resValue;
-                                } else if (attr.equals("description")) {
-                                    description = resValue;
-                                }
+                    if (parser.getName().equals("entry")) {
+                        for (String attr : resAttributes) {
+                            resId = parser.getAttributeResourceValue(PreferenceManager.XML_NAMESPACE, attr, ResourcesCompat.ID_NULL);
+                            if (resId == ResourcesCompat.ID_NULL) {
+                                resValue = parser.getAttributeValue(PreferenceManager.XML_NAMESPACE, attr);
+                            } else {
+                                resValue = context.getString(resId);
                             }
-                            if (key != null && title != null) {
-                                map.put(key, new RadioInfo(title, description));
+                            if (attr.equals("key")) {
+                                key = resValue;
+                            } else if (attr.equals("title")) {
+                                title = resValue;
+                            } else if (attr.equals("description")) {
+                                description = resValue;
+                            }
+                        }
+                        if (key != null && title != null) {
+                            if (key.isEmpty()) {
+                                throw new XmlPullParserException(parser.getLineNumber() + ": attribute \\'key\\' must not have empty string");
+                            } else {
+                                map.put(key, new RadioInfo(radioInfoIndex, key, title, description));
+                                radioInfoIndex++;
                             }
                         }
                     }
-
-                    eventType = parser.next();
                 }
-            } catch (XmlPullParserException | IOException e) {
-                e.printStackTrace();
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-                return null;
+
+                eventType = parser.next();
             }
 
             return map;
         }
 
-        public class RadioInfo {
+        public static class RadioInfo {
 
             /**
              * 라디오 객체의 관리를 쉽게 하기위한 데이터 클래스
@@ -444,10 +475,14 @@ public class Preference {
              * description : 라디오의 설명이다.
              */
 
+            int index;
+            String key;
             String title;
             String description;
 
-            public RadioInfo(String title, String description) {
+            public RadioInfo(int index, String key, String title, String description) {
+                this.index = index;
+                this.key = key;
                 this.title = title;
                 this.description = description == null ? "" : description;
             }
@@ -457,7 +492,7 @@ public class Preference {
                 if (this == o) return true;
                 if (o == null || getClass() != o.getClass()) return false;
                 RadioInfo radioInfo = (RadioInfo) o;
-                return Objects.equals(title, radioInfo.title) && Objects.equals(description, radioInfo.description);
+                return Objects.equals(key, radioInfo.key) && Objects.equals(title, radioInfo.title) && Objects.equals(description, radioInfo.description);
             }
 
             @Override
@@ -467,7 +502,7 @@ public class Preference {
         }
     }
 
-    public static class SeekBar extends Basic {
+    public static class SeekBar extends PreferenceComponent {
 
         /**
          * 설정값의 시크바의 데이터를 담는 클래스이다.<p>
@@ -493,20 +528,23 @@ public class Preference {
         private int mMaxValue;
         private int mMinValue;
 
-        private boolean mMuteUsing;
+        private boolean mMuteUsage;
         private boolean mMuted;
 
         private boolean mIconUsing;
         private boolean mReplaceIcon;
 
-        public SeekBar(@DrawableRes int iconRes, boolean enabled, int defaultValue, int max, int min, boolean replaceIcon, boolean muteUsing) {
-            super(enabled);
+        protected SeekBarProgressChangedListener seekBarListener = null;
 
-            mDefaultValue = defaultValue;
+        public SeekBar(@DrawableRes int iconRes, boolean enabled, String defaultValue, int max, int min, boolean replaceIcon, boolean muteUsage) {
+            super(enabled);
+            if (!enabled) return;
+
+            mDefaultValue = defaultValue.isEmpty() ? (max + min) / 2 : Integer.parseInt(defaultValue);
             mMaxValue = max;
             mMinValue = min;
 
-            mMuteUsing = muteUsing;
+            mMuteUsage = muteUsage;
 
             mReplaceIcon = replaceIcon;
             if (iconRes == ResourcesCompat.ID_NULL && !mReplaceIcon) {
@@ -515,7 +553,7 @@ public class Preference {
 
         }
 
-        public SeekBar(@DrawableRes int iconRes, boolean enabled, int defaultValue, int max, int min, boolean replaceIcon) {
+        public SeekBar(@DrawableRes int iconRes, boolean enabled, String defaultValue, int max, int min, boolean replaceIcon) {
             this(iconRes, enabled, defaultValue, max, min, replaceIcon, true);
         }
 
@@ -524,8 +562,9 @@ public class Preference {
             return super.isValid() && mMaxValue > mMinValue;
         }
 
-        public void resetProgressToDefault() {
+        public void resetToDefault() {
             setProgress(mDefaultValue);
+            setProgressRaw(mDefaultValue);
         }
 
         public void setProgress(int value) {
@@ -582,8 +621,8 @@ public class Preference {
             return mIconUsing || mReplaceIcon;
         }
 
-        public boolean isMutable() {
-            return mMuteUsing && mMinValue == 0;
+        public boolean isMuteUsed() {
+            return mMuteUsage;
         }
 
         public void setReplaceIcon(boolean replaceIcon) {
@@ -605,9 +644,24 @@ public class Preference {
         public void toggleMute() {
             mMuted = !mMuted;
         }
+
+        public void setProgressChangedListener(SeekBarProgressChangedListener listener) {
+            seekBarListener = listener;
+        }
+
+        public static class SeekBarProgressChangedListener {
+            public void onProgressChange() {
+            }
+
+            public void onStartChange() {
+            }
+
+            public void onStopChange() {
+            }
+        }
     }
 
-    public static class Intent extends Basic {
+    public static class Intent extends PreferenceComponent {
 
         /**
          * 설정값의 인텐트의 데이터를 담는 클래스이다.<p>
@@ -624,10 +678,12 @@ public class Preference {
 
         private ActivityResultLauncher mLauncher;
 
-        private android.content.Intent mDefaultIntent;
-        private Uri mDefaultUri;
+        private android.content.Intent mLaunchIntent;
+        private Uri mLaunchUri;
+        private Activity mLauncherActivity;
 
         private boolean mIconUsing;
+        private boolean mLauncherNotUsing;
 
         public Intent(boolean enabled, @DrawableRes int iconRes) {
             this(enabled, iconRes, null);
@@ -635,6 +691,7 @@ public class Preference {
 
         public Intent(boolean enabled, @DrawableRes int iconRes, ActivityResultLauncher launcher) {
             super(enabled);
+            if (!enabled) return;
 
             mLauncher = launcher;
 
@@ -644,16 +701,22 @@ public class Preference {
         }
 
         public boolean isLaunchable() {
-            return isValid() && mLauncher != null &&
-                    (mDefaultIntent != null || mDefaultUri != null);
+            return isValid() &&
+                    ((mLauncher != null && (mLaunchIntent != null || mLaunchUri != null)) || (mLauncherNotUsing && !mLauncherActivity.isDestroyed() && mLaunchIntent != null))
+                    ;
         }
 
-        public void setDefaultIntent(android.content.Intent intent) {
-            mDefaultIntent = intent;
+        public void setLaunchIntent(android.content.Intent intent) {
+            mLaunchIntent = intent;
         }
 
-        public void setDefaultUri(Uri uri) {
-            mDefaultUri = uri;
+        public void setLaunchUri(Uri uri) {
+            mLaunchUri = uri;
+        }
+
+        public void notUseLauncher(@NonNull Activity activity) {
+            mLauncherActivity = activity;
+            mLauncherNotUsing = true;
         }
 
         public void setLauncher(ActivityResultLauncher launcher) {
@@ -667,64 +730,19 @@ public class Preference {
         /*package-private*/
         void launch() {
 
-            try {
-                mLauncher.launch(mDefaultIntent);
-            } catch (ClassCastException e) {
-                mLauncher.launch(mDefaultUri);
+            if (mLauncherNotUsing) {
+                mLauncherActivity.startActivity(mLaunchIntent);
+            } else {
+                try {
+                    mLauncher.launch(mLaunchIntent);
+                } catch (ClassCastException e) {
+                    mLauncher.launch(mLaunchUri);
+                }
             }
-
         }
 
         public boolean isIconUsing() {
             return mIconUsing;
-        }
-    }
-
-    public static class Event extends Basic {
-
-        /**
-         * 설정값의 클릭이벤트를 담는 클래스이다.<p>
-         * <p>
-         * mEnabled : 특성 사용여부이다. 변경할 수 없다.<p>
-         */
-
-        private boolean mRunOnUiThread;
-        private Handler mHandler;
-        private Runnable mRunnable;
-
-        protected Event(boolean enabled) {
-            super(enabled);
-        }
-
-        @Override
-        public boolean isValid() {
-            return super.isValid() && mRunnable != null;
-        }
-
-        public void setRunnable(Runnable runnable) {
-            setRunnable(null, runnable);
-        }
-
-        public void setRunnable(Handler handler, Runnable runnable) {
-            mHandler = handler;
-            mRunnable = runnable;
-
-            setRunOnUiThread(handler != null);
-        }
-
-        private void setRunOnUiThread(boolean runOnUiThread) {
-            mRunOnUiThread = runOnUiThread;
-        }
-
-        public void startEvent(Preference preference) {
-            if (mRunnable == null) {
-                return;
-            }
-            if (mRunOnUiThread) {
-                mHandler.post(mRunnable);
-            } else {
-                new Thread(mRunnable, "click event from " + preference.getTitle()).start();
-            }
         }
     }
 
@@ -736,110 +754,124 @@ public class Preference {
          * 필드는 Preference의 필드와 동일하다.<p>
          */
 
-        //컨텍스트
-        Context mContext;
+        //빌더 변수
+        private Context mContext;
+        private Bundle mBundle;
 
         //필수 데이터
-        @IdRes
-        private int mId;
-        @NonNull
-        private String mAccessName;
-        @NonNull
-        private Type mType;
-        @DrawableRes
-        private int mIconRes;
+        public static String KEY_ID = "id";
+        public static String KEY_ACCESS_NAME = "access_name";
+        public static String KEY_TYPE = "type";
+        public static String KEY_ICON_RES = "icon_res";
 
-        //데이터
-        private String mTitle;
-        private String mDescription;
-        private String mDetailedDescription;
-        private boolean mEnabled;
+        //공통 데이터
+        public static String KEY_TITLE = "title";
+        public static String KEY_DESCRIPTION = "description";
+        public static String KEY_DETAILED_DESCRIPTION = "detailed_description";
+        public static String KEY_ENABLED = "enabled";
+        public static String KEY_DEFAULT_VALUE = "default_value";
+        public static String KEY_SAVED_VALUE = "saved_value";
 
         //선택적 개별 데이터
+
+        // 스위치
+        public static String KEY_SWITCH_USAGE = "switch_usage";
+        public static String KEY_SWITCH_DEFAULT_VALUE = "switch_default_value";
+        public static String KEY_SWITCH_SAVED_VALUE = "switch_saved_value";
+
+        // 텍스트
+        public static String KEY_INPUT_TYPE = "input_type";
+
+        // 라디오
+        public static String KEY_RADIO_ENABLED = "radio_enabled";
+        public static String KEY_RADIO_XML_RESOURCE = "radio_xml_resource";
+
+        //시크바
+        public static String KEY_SEEKBAR_ENABLED = "seekbar_enabled";
+        public static String KEY_SEEKBAR_SAVED_VALUE = "seekbar_saved_value";
+        public static String KEY_SEEKBAR_MAX = "seekbar_max";
+        public static String KEY_SEEKBAR_MIN = "seekbar_min";
+        public static String KEY_SEEKBAR_REPLACE_ICON = "seekbar_replace_icon";
+        private static final String KEY_SEEKBAR_MUTE_USAGE = "seekbar_mutable";
+
+        //인텐트
+        public static String KEY_INTENT_USAGE = "intent_usage";
+
         // 하위 설정값 데이터 리스트
         private final LinkedList<Preference> mSubPreferenceList = new LinkedList<>();
 
-        // 스위치
-        private boolean mSwitchUsage;
-
-        // 텍스트
-        private int mInputType;
-
-        // 라디오
-        private boolean mRadioEnabled;
-        @XmlRes
-        private int mRadioXmlResource;
-
-        //시크바
-        private boolean mSeekBarEnabled;
-        private int mSeekBarDefaultValue;
-        private int mSeekBarMax;
-        private int mSeekBarMin;
-        private boolean mSeekBarReplaceIcon;
-
-        //인텐트
-        private boolean mIntentUsage;
-
-        //이벤트
-        private boolean mEventUsage;
-
         public Builder(Context context) {
             mContext = context;
+            mBundle = new Bundle();
 
-            mId = ResourcesCompat.ID_NULL;
-            mAccessName = "";
-            mType = Type.EXPLAIN_TYPE;
-            mIconRes = ResourcesCompat.ID_NULL;
+            mBundle.putInt(KEY_ID, ResourcesCompat.ID_NULL);
+            mBundle.putString(KEY_ACCESS_NAME, "");
+            mBundle.putInt(KEY_TYPE, Type.EXPLAIN_TYPE.getValue());
+            mBundle.putInt(KEY_ICON_RES, ResourcesCompat.ID_NULL);
 
-            mTitle = "";
-            mDescription = "";
-            mDetailedDescription = "";
-            mEnabled = true;
+            mBundle.putString(KEY_TITLE, "");
+            mBundle.putString(KEY_DEFAULT_VALUE, "");
+            mBundle.putString(KEY_DESCRIPTION, "");
+            mBundle.putString(KEY_DETAILED_DESCRIPTION, "");
+            mBundle.putBoolean(KEY_ENABLED, true);
 
-            mInputType = EditorInfo.TYPE_CLASS_TEXT;
+            mBundle.putInt(KEY_INPUT_TYPE, EditorInfo.TYPE_CLASS_TEXT);
         }
 
         public Builder setId(int id) {
-            mId = id;
+            mBundle.putInt(KEY_ID, id);
             return this;
         }
 
         public void setAccessName(String accessName) {
-            mAccessName = accessName;
+            mBundle.putString(KEY_ACCESS_NAME, accessName);
+
+//            try {
+//                mBundle.putString(KEY_SAVED_VALUE, PreferenceManager.getInstance(mContext).loadPreferenceContentValue(accessName));
+//                mBundle.putInt(KEY_SEEKBAR_SAVED_VALUE, Integer.parseInt(PreferenceManager.getInstance(mContext).loadPreferenceContentValue(accessName)));
+//                mBundle.putBoolean(KEY_SWITCH_SAVED_VALUE, PreferenceManager.getInstance(mContext).loadPreferenceSwitchValue(accessName));
+//            } catch (NumberFormatException ignored) {
+//                //시크바는 어차피 스위치 없으니 시크바에서 에러 났으니 스위치를 건너뛰었다가 성립되지 않음 (둘이 순서 상관 없다)
+//            }
         }
 
         public Builder setType(@NonNull Type type) {
-            mType = type;
+            mBundle.putInt(KEY_TYPE, type.getValue());
             return this;
         }
 
         public Builder setIconRes(@DrawableRes int iconRes) {
-            mIconRes = iconRes;
+            mBundle.putInt(KEY_ICON_RES, iconRes);
             return this;
         }
 
         public Builder setTitle(@NonNull String title) {
-            mTitle = title;
+            mBundle.putString(KEY_TITLE, title);
+            return this;
+        }
+
+        public Builder setDefaultValue(@NonNull String defaultValue) {
+            mBundle.putString(KEY_DEFAULT_VALUE, defaultValue);
             return this;
         }
 
         public Builder setDescription(@NonNull String description) {
-            mDescription = description;
+            mBundle.putString(KEY_DESCRIPTION, description);
             return this;
         }
 
         public Builder setDetailedDescription(@NonNull String detailedDescription) {
-            mDetailedDescription = detailedDescription;
+            mBundle.putString(KEY_DETAILED_DESCRIPTION, detailedDescription);
             return this;
         }
 
         public Builder setEnabled(boolean enabled) {
-            mEnabled = enabled;
+            mBundle.putBoolean(KEY_ENABLED, enabled);
             return this;
         }
 
         public Builder setInputType(int inputType) {
-            mInputType = inputType;
+            mBundle.putInt(KEY_INPUT_TYPE, inputType);
             return this;
         }
 
@@ -848,45 +880,32 @@ public class Preference {
             return this;
         }
 
+        public Builder setSwitchDefaultValue(boolean switchDefaultValue) {
+            mBundle.putBoolean(KEY_SWITCH_DEFAULT_VALUE, switchDefaultValue);
+            return this;
+        }
+
         public Builder setSwitch(boolean switchUsage) {
-            mSwitchUsage = switchUsage;
+            mBundle.putBoolean(KEY_SWITCH_USAGE, switchUsage);
             return this;
         }
 
         public Builder setRadio(@XmlRes int xmlResource) {
-            if (xmlResource != ResourcesCompat.ID_NULL) {
-                mRadioEnabled = true;
-            } else {
-                mRadioEnabled = false;
-            }
-            mRadioXmlResource = xmlResource;
+            mBundle.putInt(KEY_RADIO_XML_RESOURCE, xmlResource);
             return this;
         }
 
-        public Builder setEvent(boolean eventUsage) {
-            mEventUsage = eventUsage;
-            return this;
-        }
-
-        public Builder setSeekBar(int defaultValue, int max, int min, boolean replaceIcon) {
-
-            mSeekBarEnabled = mType.equals(Type.SEEK_BAR_TYPE);
-            mSeekBarDefaultValue = defaultValue;
-            mSeekBarMax = max;
-            mSeekBarMin = min;
-            mSeekBarReplaceIcon = replaceIcon;
-
-            return this;
-        }
-
-        public Builder setIntent() {
-            mIntentUsage = mType.equals(Type.INTENT_TYPE);
+        public Builder setSeekBar(int max, int min, boolean replaceIcon, boolean muteUsage) {
+            mBundle.putInt(KEY_SEEKBAR_MAX, max);
+            mBundle.putInt(KEY_SEEKBAR_MIN, min);
+            mBundle.putBoolean(KEY_SEEKBAR_REPLACE_ICON, replaceIcon);
+            mBundle.putBoolean(KEY_SEEKBAR_MUTE_USAGE, muteUsage);
             return this;
         }
 
         @NonNull
         public Preference create() {
-            Preference preference = new Preference(mId, mAccessName, mType, mIconRes, mTitle, mDescription, mDetailedDescription, mEnabled);
+            Preference preference = new Preference(mBundle);
             initPreference(preference);
 
             return preference;
@@ -894,7 +913,8 @@ public class Preference {
 
         @NonNull
         public PreferenceGroup createGroup() {
-            PreferenceGroup preferenceGroup = new PreferenceGroup(mId, mAccessName, mTitle, mDescription, mDetailedDescription, mIconRes);
+            mBundle.putInt(Builder.KEY_TYPE, Type.EXPLAIN_TYPE.getValue());
+            PreferenceGroup preferenceGroup = new PreferenceGroup(mBundle);
             initPreference(preferenceGroup);
 
             return preferenceGroup;
@@ -903,17 +923,15 @@ public class Preference {
         private void initPreference(Preference preference) {
             preference.initSubPreferenceList(mSubPreferenceList);
 
-            preference.initSwitch(mType.switchAvailable() && mSwitchUsage);
+            preference.initSwitch(mBundle);
 
-            preference.initInputType(mInputType);
+            preference.initText(mBundle);
 
-            preference.initRadio(mRadioEnabled, mContext, mRadioXmlResource);
+            preference.initRadio(mBundle, mContext);
 
-            preference.initSeekBar(mSeekBarEnabled, mSeekBarDefaultValue, mSeekBarMax, mSeekBarMin, mSeekBarReplaceIcon);
+            preference.initSeekBar(mBundle);
 
-            preference.initIntent(mType.equals(Type.INTENT_TYPE)/* && mIntentUsage*/);
-
-            preference.initEvent(mType.equals(Type.EVENT_TYPE));
+            preference.initIntent(mBundle);
         }
     }
 

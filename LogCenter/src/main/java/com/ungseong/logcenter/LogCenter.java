@@ -1,11 +1,11 @@
-package com.longseong.logcenter;
+package com.ungseong.logcenter;
 
-import static com.longseong.logcenter.util.Utils.Now;
-import static com.longseong.logcenter.util.Utils.getLogFolder;
+import static com.ungseong.logcenter.util.Utils.Now;
+import static com.ungseong.logcenter.util.Utils.getLogFolder;
 
 import android.content.Context;
 
-import com.longseong.logcenter.util.Utils;
+import com.ungseong.logcenter.util.Utils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
